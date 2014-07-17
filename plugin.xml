@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="io.branchmetrics.branchreferral" version="0.1.0">
+    <name>Branch</name>
+    <description>Branch Deep Linking SDK</description>
+    <license>See docs</license>
+    <keywords>branch,deep links</keywords>
+    <js-module src="branch.js" name="Branch">
+        <clobbers target="Branch" />
+    </js-module>
+    <platform name="android">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Branch">
+                <param name="android-package" value="io.branch.referral.CDVBranch"/>
+            </feature>
+        </config-file>
+        <source-file src="nativelibs/Branch_Android_SDK/Branch.java" target-dir="src/io/branch/referral"  />
+    </platform>
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Branch">
+                <param name="ios-package" value="CDVBranch"/>
+            </feature>
+        </config-file>
+        <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
+    </platform>
+</plugin>
