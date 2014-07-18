@@ -6,7 +6,7 @@
     <license>See docs</license>
     <keywords>branch,deep links</keywords>
     <js-module src="branch.js" name="Branch">
-        <clobbers target="Branch" />
+        <clobbers target="branch" />
     </js-module>
     <platform name="android">
         <config-file target="config.xml" parent="/*">
@@ -15,6 +15,15 @@
             </feature>
         </config-file>
         <source-file src="nativelibs/Branch_Android_SDK/Branch.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/Base64.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/BranchRemoteInterface.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/CDVBranch.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/NetworkCallback.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/PrefHelper.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/RemoteInterface.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/ServerRequest.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/SystemObserver.java" target-dir="src/io/branch/referral"  />
+
     </platform>
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
@@ -22,7 +31,21 @@
                 <param name="ios-package" value="CDVBranch"/>
             </feature>
         </config-file>
+
+        <framework src="CoreTelephony.framework" weak="true" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/ServerInterface.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerInterface.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/ServerRequest.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequest.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/SystemObserver.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/SystemObserver.m" />
     </platform>
 </plugin>

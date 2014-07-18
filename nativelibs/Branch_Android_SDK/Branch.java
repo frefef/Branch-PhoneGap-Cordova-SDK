@@ -115,6 +115,10 @@ public class Branch {
 		}).start();
 	}
 	
+	public boolean hasIdentity() {
+		return !prefHelper_.getIdentity().equals(PrefHelper.NO_STRING_VALUE);
+	}
+	
 	public void identifyUser(String userId, BranchReferralInitListener callback) {
 		initIdentityFinishedCallback_ = callback;
 		identifyUser(userId);
@@ -715,6 +719,7 @@ public class Branch {
 						
 						prefHelper_.setInstallParams(PrefHelper.NO_STRING_VALUE);
 						prefHelper_.setSessionParams(PrefHelper.NO_STRING_VALUE);
+						prefHelper_.setIdentity(PrefHelper.NO_STRING_VALUE);
 						prefHelper_.clearUserValues();
 						
 						requestQueue_.remove(0);
@@ -726,6 +731,12 @@ public class Branch {
 							String params = serverResponse.getString("referring_data");
 							prefHelper_.setInstallParams(params);
 						} 
+						if (requestQueue_.size() > 0) {
+							ServerRequest req = requestQueue_.get(0);
+							if (req.getPost() != null && req.getPost().has("identity")) {
+								prefHelper_.setIdentity(req.getPost().getString("identity"));
+							}
+						}
 						Handler mainHandler = new Handler(context_.getMainLooper());
 						mainHandler.post(new Runnable() {
 							@Override

@@ -1,21 +1,25 @@
 var exec = require('cordova/exec');
 
-var Branch = function(callback, app_key) {
+function Branch() { }
+
+Branch.prototype.getInstance = function(app_key, callback) {
 	var execArgs = [];
-	var me = this;
-	if (app_key) { execArgs.push(app_key); }
+	var self = this;
+	if (typeof app_key == 'function') { callback = app_key; }
+	else { execArgs.push(app_key); }
 	exec(
-		function(r) { callback(me); },
-		function(e) { callback(me); },
+		function(r) { callback(self); },
+		function(e) { callback(self); },
 		"Branch", 
 		"getInstance", 
 		execArgs
 	);
 };
 
-Branch.prototype.initUserSession = function(callback, is_referrable) {
+Branch.prototype.initUserSession = function(is_referrable, callback) {
 	var execArgs = [];
-	if (is_referrable) { execArgs.push(is_referrable); }
+	if (typeof is_referrable == 'function') { callback = is_referrable; }
+	else { execArgs.push(is_referrable); }
 	exec(
 		function(r) {
 			if (callback) {
@@ -89,9 +93,10 @@ Branch.prototype.hasIdentity = function(callback) {
 	);
 };
 
-Branch.prototype.identifyUser = function(callback, identity) {
+Branch.prototype.identifyUser = function(identity, callback) {
 	var execArgs = [];
-	if (identity) { execArgs.push(identity); }
+	if (typeof identity == 'function') { callback = identity; }
+	else { execArgs.push(identity); }
 	exec(
 		function(r) {
 			if (callback) {
@@ -134,10 +139,9 @@ Branch.prototype.userCompletedAction = function(event, metadata) {
 	);
 };
 
-Branch.prototype.getShortUrl = function(callback, data, tag) {
-	var execArgs = [];
-	if (data) { execArgs.push(data); }
-	if (tag) { execArgs.push(tag); }
+Branch.prototype.getShortUrl = function(data, tag, callback) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	callback = execArgs.pop();
 	exec(
 		function(r) {
 			if (r.url) { 
@@ -154,3 +158,6 @@ Branch.prototype.getShortUrl = function(callback, data, tag) {
 		execArgs
 	);
 };
+
+var branch = new Branch();
+module.exports = branch;
