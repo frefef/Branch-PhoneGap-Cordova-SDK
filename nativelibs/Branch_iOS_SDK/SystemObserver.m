@@ -15,7 +15,6 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
-
 @implementation SystemObserver
 
 + (NSString *)getUniqueHardwareId {
@@ -32,8 +31,31 @@
     if (!uid && NSClassFromString(@"UIDevice")) {
         uid = [[UIDevice currentDevice].identifierForVendor UUIDString];
     }
+    
+    if (!uid) {
+        uid = [[NSUUID UUID] UUIDString];
+    }
 
     return uid;
+}
+
++ (NSString *)getURIScheme {
+    NSArray *urlTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+    if (urlTypes) {
+        for (NSDictionary *urlType in urlTypes) {
+            NSArray *urlSchemes = [urlType objectForKey:@"CFBundleURLSchemes"];
+            if (urlSchemes) {
+                for (NSString *urlScheme in urlSchemes) {
+                    if (![[urlScheme substringWithRange:NSMakeRange(0, 2)] isEqualToString:@"fb"] &&
+                        ![[urlScheme substringWithRange:NSMakeRange(0, 2)] isEqualToString:@"db"] &&
+                        ![[urlScheme substringWithRange:NSMakeRange(0, 3)] isEqualToString:@"pin"]) {
+                        return urlScheme;
+                    }
+                }
+            }
+        }
+    }
+    return nil;
 }
 
 + (NSString *)getAppVersion {

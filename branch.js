@@ -75,6 +75,16 @@ Branch.prototype.getReferringParams = function(callback) {
 	);
 };
 
+Branch.prototype.closeSession = function() {
+	exec(
+		function(r) { },
+		function(e) { },
+		"Branch", 
+		"closeSession", 
+		[]
+	);
+};
+
 Branch.prototype.hasIdentity = function(callback) {
 	exec(
 		function(r) {
@@ -139,7 +149,7 @@ Branch.prototype.userCompletedAction = function(event, metadata) {
 	);
 };
 
-Branch.prototype.getShortUrl = function(data, tag, callback) {
+Branch.prototype.getShortUrl = function(data, channel, feature, callback) {
 	var execArgs = Array.prototype.slice.apply(arguments);
 	callback = execArgs.pop();
 	exec(
@@ -155,6 +165,26 @@ Branch.prototype.getShortUrl = function(data, tag, callback) {
 		},
 		"Branch", 
 		"getShortUrl", 
+		execArgs
+	);
+};
+
+Branch.prototype.getContentUrl = function(data, channel, callback) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	callback = execArgs.pop();
+	exec(
+		function(r) {
+			if (r.url) { 
+				callback(r.url); 
+			} else {
+				callback("");
+			}
+		},
+		function(e) { 
+			callback("");
+		},
+		"Branch", 
+		"getContentUrl", 
 		execArgs
 	);
 };

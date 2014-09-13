@@ -15,6 +15,7 @@
 - (void)getInstance:(CDVInvokedUrlCommand*)command;
 
 - (void)initUserSession:(CDVInvokedUrlCommand*)command;
+- (void)closeSession:(CDVInvokedUrlCommand*)command;
 
 - (void)getInstallReferringParams:(CDVInvokedUrlCommand*)command;
 - (void)getReferringParams:(CDVInvokedUrlCommand*)command;
@@ -26,5 +27,6 @@
 - (void)userCompletedAction:(CDVInvokedUrlCommand*)command;
 
 - (void)getShortUrl:(CDVInvokedUrlCommand*)command;
+- (void)getContentUrl:(CDVInvokedUrlCommand*)command;
 
 @end

@@ -51,6 +51,14 @@
     }
 }
 
+- (void)closeSession:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    [self.branch closeSession];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
+}
+
 - (void)getInstallReferringParams:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
@@ -118,17 +126,45 @@
         self.branch = [Branch getInstance];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    NSString *tag = nil;
+    NSString *channel = nil;
+    NSString *feature = nil;
+    int currentStringParam = 0;
     NSDictionary *data = nil;
     for (id object in command.arguments) {
         if ([object isKindOfClass:[NSString class]]) {
-            tag = object;
+            if (currentStringParam == 0) {
+                channel = object;
+                currentStringParam = 1;
+            } else {
+                feature = object;
+            }
         } else if ([object isKindOfClass:[NSDictionary class]]) {
             data = object;
         }
     }
 
-    [self.branch getShortURLWithParams:data andTag:tag andCallback:^(NSString *url) {
+    [self.branch getShortURLWithParams:data andChannel:channel andFeature:feature andCallback:^(NSString *url) {
+        [retParams setObject:url forKey:@"url"];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+    }];
+}
+
+- (void)getContentUrl:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    NSString *channel = nil;
+    NSDictionary *data = nil;
+    for (id object in command.arguments) {
+        if ([object isKindOfClass:[NSString class]]) {
+            channel = object;
+        } else if ([object isKindOfClass:[NSDictionary class]]) {
+            data = object;
+        }
+    }
+
+    [self.branch getContentUrlWithParams:data andChannel:channel andCallback:^(NSString *url) {
         [retParams setObject:url forKey:@"url"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];
