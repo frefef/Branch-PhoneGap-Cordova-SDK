@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.1.0">
+        id="io.branchmetrics.branchreferral" version="0.2.0">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
@@ -23,7 +23,7 @@
         <source-file src="nativelibs/Branch_Android_SDK/RemoteInterface.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/ServerRequest.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/SystemObserver.java" target-dir="src/io/branch/referral"  />
-
+        <source-file src="nativelibs/Branch_Android_SDK/ApkParser.java" target-dir="src/io/branch/referral"  />
     </platform>
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
@@ -33,6 +33,7 @@
         </config-file>
 
         <framework src="CoreTelephony.framework" weak="true" />
+        <framework src="AdSupport.framework" weak="true" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
