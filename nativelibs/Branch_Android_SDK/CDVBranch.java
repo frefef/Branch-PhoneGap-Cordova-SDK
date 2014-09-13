@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 
 public class CDVBranch extends CordovaPlugin {
@@ -39,12 +40,12 @@ public class CDVBranch extends CordovaPlugin {
     		if (args.length() > 0) {
     			this.branch_ = Branch.getInstance(context_, args.getString(0));
     		} else {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
     	} else if (action.equals("initUserSession")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		if (args.length() > 0) {
@@ -74,34 +75,34 @@ public class CDVBranch extends CordovaPlugin {
     		}
     	} else if (action.equals("getInstallReferringParams")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		retParams.put("data", this.branch_.getInstallReferringParams());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
     	} else if (action.equals("getReferringParams")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		retParams.put("data", this.branch_.getReferringParams());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
     	} else if (action.equals("closeSession")) {
             if (this.branch_ == null) {
-                this.branch_ = Branch.getInstance();
+                this.branch_ = Branch.getInstance(context_);
             }
             this.branch_.closeSession();
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
         } else if (action.equals("hasIdentity")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		retParams.put("check", this.branch_.hasIdentity());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
     	} else if (action.equals("identifyUser")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		if (args.length() > 0) {
@@ -121,16 +122,16 @@ public class CDVBranch extends CordovaPlugin {
     		}
     	} else if (action.equals("clearUser")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		this.branch_.clearUser();
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
     	} else if (action.equals("userCompletedAction")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		String tag = "";
-    		JSONObject metadata = new JSONObject();
+    		JSONObject metadata = new JSONObject(this.context_);
     		for (int i = 0; i < args.length(); i++) {
     			if (args.get(i) instanceof String) {
     				tag = args.getString(i);
@@ -143,7 +144,7 @@ public class CDVBranch extends CordovaPlugin {
     		
     	} else if (action.equals("getShortUrl")) {
     		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance();
+    			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		String channel = "";
@@ -175,7 +176,7 @@ public class CDVBranch extends CordovaPlugin {
     		});
     	} else if (action.equals("getContentUrl")) {
             if (this.branch_ == null) {
-                this.branch_ = Branch.getInstance();
+                this.branch_ = Branch.getInstance(context_);
             }
             final JSONObject retParams = new JSONObject();
             String channel = "";
