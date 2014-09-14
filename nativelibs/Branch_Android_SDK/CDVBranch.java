@@ -5,6 +5,7 @@ import io.branch.referral.Branch.BranchReferralInitListener;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
@@ -14,18 +15,17 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 
 public class CDVBranch extends CordovaPlugin {
 	private Branch branch_;
 	private Context context_;
-    private Activity activity_;
-	
-	@Override
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-    	super.initialize(cordova, webView);
-    	this.context_ = cordova.getActivity().getApplicationContext();
-        this.activity_ = cordova.getActivity();
-	}
+    private Intent intent_;
+
+     @Override
+     public void onNewIntent(Intent intent) {
+        this.intent_ = intent;
+     }
 	
 	/**
      * Executes the request and returns whether the action was valid.
@@ -36,6 +36,11 @@ public class CDVBranch extends CordovaPlugin {
      * @return 			True if the action was valid, false otherwise.
      */
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        this.context_ = ((CordovaActivity) this.webView.getContext()).getApplicationContext();
+        if (this.intent_ == null) {
+            this.intent_ = ((CordovaActivity) this.webView.getContext()).getIntent();
+        }
+
     	if (action.equals("getInstance")) {
     		if (args.length() > 0) {
     			this.branch_ = Branch.getInstance(context_, args.getString(0));
@@ -52,18 +57,20 @@ public class CDVBranch extends CordovaPlugin {
     			this.branch_.initUserSession(new BranchReferralInitListener() {
 					@Override
 					public void onInitFinished(JSONObject referringParams) {
-						try {
+						intent_.setData(null);
+                        try {
 							retParams.put("data", referringParams);
 						} catch (JSONException e) {
 							e.printStackTrace();
 						}
 						callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
 					}
-    			}, args.getBoolean(0), this.activity_.getIntent().getData());
+    			}, args.getBoolean(0), intent_.getData());
     		} else {
     			this.branch_.initUserSession(new BranchReferralInitListener() {
 					@Override
 					public void onInitFinished(JSONObject referringParams) {
+                        intent_.setData(null);
 						try {
 							retParams.put("data", referringParams);
 						} catch (JSONException e) {
@@ -71,7 +78,7 @@ public class CDVBranch extends CordovaPlugin {
 						}
 						callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
 					}
-    			}, his.activity_.getIntent().getData());
+    			}, intent_.getData());
     		}
     	} else if (action.equals("getInstallReferringParams")) {
     		if (this.branch_ == null) {
@@ -98,7 +105,7 @@ public class CDVBranch extends CordovaPlugin {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
-    		retParams.put("check", this.branch_.hasIdentity());
+    		retParams.put("check", this.branch_.isIdentified());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
     	} else if (action.equals("identifyUser")) {
     		if (this.branch_ == null) {
@@ -131,7 +138,7 @@ public class CDVBranch extends CordovaPlugin {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		String tag = "";
-    		JSONObject metadata = new JSONObject(this.context_);
+    		JSONObject metadata = new JSONObject();
     		for (int i = 0; i < args.length(); i++) {
     			if (args.get(i) instanceof String) {
     				tag = args.getString(i);
