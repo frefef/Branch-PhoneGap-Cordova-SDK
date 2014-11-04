@@ -16,8 +16,6 @@
     NSMutableDictionary *post = [[NSMutableDictionary alloc] init];
     
     [post setObject:[PreferenceHelper getAppKey] forKey:@"app_id"];
-    if (![[PreferenceHelper getLinkClickID] isEqualToString:NO_STRING_VALUE])
-        [post setObject:@"link_click_id" forKey:[PreferenceHelper getLinkClickID]];
     if ([SystemObserver getUniqueHardwareId]) [post setObject:[SystemObserver getUniqueHardwareId] forKey:@"hardware_id"];
     if ([SystemObserver getAppVersion]) [post setObject:[SystemObserver getAppVersion] forKey:@"app_version"];
     if ([SystemObserver getCarrier]) [post setObject:[SystemObserver getCarrier] forKey:@"carrier"];
@@ -28,10 +26,11 @@
     if ([SystemObserver getScreenWidth]) [post setObject:[SystemObserver getScreenWidth] forKey:@"screen_width"];
     if ([SystemObserver getScreenHeight]) [post setObject:[SystemObserver getScreenHeight] forKey:@"screen_height"];
     if ([SystemObserver getURIScheme]) [post setObject:[SystemObserver getURIScheme] forKey:@"uri_scheme"];
+    if ([SystemObserver getUpdateState]) [post setObject:[SystemObserver getUpdateState] forKeyedSubscript:@"update"];
     if (![[PreferenceHelper getLinkClickIdentifier] isEqualToString:NO_STRING_VALUE]) [post setObject:[PreferenceHelper getLinkClickIdentifier] forKey:@"link_identifier"];
     [post setObject:[NSNumber numberWithInteger:[PreferenceHelper getIsReferrable]] forKey:@"is_referrable"];
     
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/install"] andTag:REQ_TAG_REGISTER_INSTALL];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"install"] andTag:REQ_TAG_REGISTER_INSTALL];
 }
 
 - (void)registerOpen {
@@ -47,7 +46,7 @@
     [post setObject:[NSNumber numberWithInteger:[PreferenceHelper getIsReferrable]] forKey:@"is_referrable"];
     if (![[PreferenceHelper getLinkClickIdentifier] isEqualToString:NO_STRING_VALUE]) [post setObject:[PreferenceHelper getLinkClickIdentifier] forKey:@"link_identifier"];
     
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/open"] andTag:REQ_TAG_REGISTER_OPEN];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"open"] andTag:REQ_TAG_REGISTER_OPEN];
 }
 
 - (void)registerClose {
@@ -56,35 +55,39 @@
     [post setObject:[PreferenceHelper getAppKey] forKey:@"app_id"];
     [post setObject:[PreferenceHelper getSessionID] forKey:@"session_id"];
     
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/close"] andTag:REQ_TAG_REGISTER_CLOSE];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"close"] andTag:REQ_TAG_REGISTER_CLOSE];
 }
 
 - (void)userCompletedAction:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/event"] andTag:REQ_TAG_COMPLETE_ACTION];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"event"] andTag:REQ_TAG_COMPLETE_ACTION];
 }
 
 - (void)getReferralCounts {
-    [self getRequestAsync:[[NSDictionary alloc] init] url:[[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/referrals/"] stringByAppendingString:[PreferenceHelper getIdentityID]] andTag:REQ_TAG_GET_REFERRAL_COUNTS];
+    [self getRequestAsync:nil url:[[[PreferenceHelper getAPIURL] stringByAppendingString:@"referrals/"] stringByAppendingString:[PreferenceHelper getIdentityID]] andTag:REQ_TAG_GET_REFERRAL_COUNTS];
 }
 
 - (void)getRewards {
-    [self getRequestAsync:[[NSDictionary alloc] init] url:[[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/credits/"] stringByAppendingString:[PreferenceHelper getIdentityID]] andTag:REQ_TAG_GET_REWARDS];
+    [self getRequestAsync:nil url:[[[PreferenceHelper getAPIURL] stringByAppendingString:@"credits/"] stringByAppendingString:[PreferenceHelper getIdentityID]] andTag:REQ_TAG_GET_REWARDS];
 }
 
 - (void)redeemRewards:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/redeem"] andTag:REQ_TAG_REDEEM_REWARDS];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"redeem"] andTag:REQ_TAG_REDEEM_REWARDS];
+}
+
+- (void)getCreditHistory:(NSDictionary *)query {
+    [self getRequestAsync:query url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"credithistory"] andTag:REQ_TAG_GET_REWARD_HISTORY];
 }
 
 - (void)createCustomUrl:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/url"] andTag:REQ_TAG_GET_CUSTOM_URL];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"url"] andTag:REQ_TAG_GET_CUSTOM_URL];
 }
 
 - (void)identifyUser:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/profile"] andTag:REQ_TAG_IDENTIFY];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"profile"] andTag:REQ_TAG_IDENTIFY];
 }
 
 - (void)logoutUser:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/logout"] andTag:REQ_TAG_LOGOUT];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"logout"] andTag:REQ_TAG_LOGOUT];
 }
 
 - (void)addProfileParams:(NSDictionary *)post withParams:(NSDictionary *)params {
@@ -111,7 +114,7 @@
     [self updateProfileParams:newPost];
 }
 - (void)updateProfileParams:(NSDictionary *)post {
-    [self postRequestAsync:post url:[[PreferenceHelper getAPIBaseURL] stringByAppendingString:@"v1/profile"] andTag:REQ_TAG_PROFILE_DATA];
+    [self postRequestAsync:post url:[[PreferenceHelper getAPIURL] stringByAppendingString:@"profile"] andTag:REQ_TAG_PROFILE_DATA];
 }
 
 @end

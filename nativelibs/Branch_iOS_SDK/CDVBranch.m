@@ -52,6 +52,10 @@
 }
 
 - (void)closeSession:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    [self.branch closeSession];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
 }
 

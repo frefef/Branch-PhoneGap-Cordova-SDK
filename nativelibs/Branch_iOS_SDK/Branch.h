@@ -11,12 +11,18 @@
 typedef void (^callbackWithParams) (NSDictionary *params);
 typedef void (^callbackWithUrl) (NSString *url);
 typedef void (^callbackWithStatus) (BOOL changed);
+typedef void (^callbackWithList) (NSArray *list);
 
 static NSString *BRANCH_FEATURE_TAG_SHARE = @"share";
 static NSString *BRANCH_FEATURE_TAG_REFERRAL = @"referral";
 static NSString *BRANCH_FEATURE_TAG_INVITE = @"invite";
 static NSString *BRANCH_FEATURE_TAG_DEAL = @"deal";
 static NSString *BRANCH_FEATURE_TAG_GIFT = @"gift";
+
+typedef enum {
+    kMostRecentFirst,
+    kLeastRecentFirst
+} CreditHistoryOrder;
 
 @interface Branch : NSObject
 
@@ -37,10 +43,15 @@ static NSString *BRANCH_FEATURE_TAG_GIFT = @"gift";
 
 - (BOOL)handleDeepLink:(NSURL *)url;
 
-- (BOOL)hasIdentity;
-- (void)identifyUser:(NSString *)userId;
-- (void)identifyUser:(NSString *)userId withCallback:(callbackWithParams)callback;
-- (void)clearUser;
+- (BOOL)hasIdentity;                                                                    //deprecated
+- (void)identifyUser:(NSString *)userId;                                                //deprecated
+- (void)identifyUser:(NSString *)userId withCallback:(callbackWithParams)callback;      //deprecated
+- (void)clearUser;                                                                      //deprecated
+- (void)closeSession;																	//deprecated
+
+- (void)setIdentity:(NSString *)userId;
+- (void)setIdentity:(NSString *)userId withCallback:(callbackWithParams)callback;
+- (void)logout;
 
 - (void)loadRewardsWithCallback:(callbackWithStatus)callback;
 - (void)loadActionCountsWithCallback:(callbackWithStatus)callback;
@@ -53,8 +64,10 @@ static NSString *BRANCH_FEATURE_TAG_GIFT = @"gift";
 - (NSInteger)getTotalCountsForAction:(NSString *)action;
 - (NSInteger)getUniqueCountsForAction:(NSString *)action;
 
-- (NSString *)getLongURL;
-- (NSString *)getLongURLWithParams:(NSDictionary *)params;
+- (void)getCreditHistoryWithCallback:(callbackWithList)callback;
+- (void)getCreditHistoryForBucket:(NSString *)bucket andCallback:(callbackWithList)callback;
+- (void)getCreditHistoryAfter:(NSString *)creditTransactionId number:(NSInteger)length order:(CreditHistoryOrder)order andCallback:(callbackWithList)callback;
+- (void)getCreditHistoryForBucket:(NSString *)bucket after:(NSString *)creditTransactionId number:(NSInteger)length order:(CreditHistoryOrder)order andCallback:(callbackWithList)callback;
 
 - (void)getShortURLWithCallback:(callbackWithUrl)callback;
 - (void)getShortURLWithParams:(NSDictionary *)params andCallback:(callbackWithUrl)callback;

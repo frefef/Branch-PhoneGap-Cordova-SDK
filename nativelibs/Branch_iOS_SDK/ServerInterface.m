@@ -8,6 +8,7 @@
 
 #import "ServerInterface.h"
 #import "PreferenceHelper.h"
+#import "Config.h"
 
 @implementation ServerInterface
 
@@ -33,7 +34,7 @@
             i = i + 1;
         }
     }
-    if(LOG) NSLog(@"using url = %@", url);
+    Debug(@"using url = %@", url);
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
     [request setURL:[NSURL URLWithString:url]];
@@ -51,12 +52,12 @@
     NSData *postData = [ServerInterface encodePostParams:post];
     NSString *postLength = [NSString stringWithFormat:@"%lu", (unsigned long)[postData length]];
     
-    if(LOG) NSLog(@"using url = %@", url);
-    if(LOG) NSLog(@"body = %@", [post description]);
+    Debug(@"using url = %@", url);
+    Debug(@"body = %@", [post description]);
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
     [request setURL:[NSURL URLWithString:url]];
-    
+    [request setTimeoutInterval:3];
     [request setHTTPMethod:@"POST"];
     [request setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
@@ -92,33 +93,27 @@
         if (string) [encodedParams appendString:@"\","];
         else [encodedParams appendString:@","];
     }
-    [encodedParams replaceCharactersInRange:NSMakeRange([encodedParams length]-1, 1) withString:@"}"];
-    if (LOG) NSLog(@"encoded params : %@", encodedParams);
+    [encodedParams appendString:@"\"source\":\"ios\" }"];
+    Debug(@"encoded params : %@", encodedParams);
     return encodedParams;
 }
 
 - (void)genericHTTPRequest:(NSMutableURLRequest *)request withTag:(NSString *)requestTag {
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler: ^(NSURLResponse *response, NSData *POSTReply, NSError *error) {
-        NSMutableDictionary *jsonObjects = [[NSMutableDictionary alloc] init];
-
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSNumber *statusCode = [NSNumber numberWithLong:[httpResponse statusCode]];
         
-        [jsonObjects setObject:statusCode forKey:kpServerStatusCode];
-        [jsonObjects setObject:requestTag forKey:kpServerRequestTag];
+        ServerResponse *serverResponse = [[ServerResponse alloc] initWithTag:requestTag andStatusCode:statusCode];
         
         if (POSTReply != nil) {
             NSError *convError;
-            NSDictionary *returnedObjs = [NSJSONSerialization JSONObjectWithData:POSTReply options:NSJSONReadingMutableContainers error:&convError];
-            
-            for (NSString *key in returnedObjs) {
-                [jsonObjects setObject:[returnedObjs objectForKey:key] forKey:key];
-            }
+            id jsonData = [NSJSONSerialization JSONObjectWithData:POSTReply options:NSJSONReadingMutableContainers error:&convError];
+            serverResponse.data = jsonData;            
         }
         
-        if(LOG) NSLog(@"returned = %@", [jsonObjects description]);
+        Debug(@"returned = %@", [serverResponse description]);
         
-        if (self.delegate) [self.delegate serverCallback:jsonObjects];
+        if (self.delegate) [self.delegate serverCallback:serverResponse];
     }];
 }
 

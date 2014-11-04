@@ -23,7 +23,7 @@ public class Branch {
 	public static String FEATURE_TAG_DEAL = "deal";
 	public static String FEATURE_TAG_GIFT = "gift";
 	
-	private static final int SESSION_KEEPALIVE = 500;
+	private static final int SESSION_KEEPALIVE = 5000;
 	private static final int INTERVAL_RETRY = 3000;
 	private static final int MAX_RETRIES = 5;
 
@@ -39,8 +39,9 @@ public class Branch {
 	private PrefHelper prefHelper_;
 	private SystemObserver systemObserver_;
 	private Context context_;
-
+	
 	private Timer closeTimer;
+	private boolean keepAlive_;
 	
 	private Semaphore serverSema_;
 	private ArrayList<ServerRequest> requestQueue_;
@@ -55,8 +56,8 @@ public class Branch {
 		requestQueue_ = new ArrayList<ServerRequest>();
 		serverSema_ = new Semaphore(1);
 		closeTimer = new Timer();
+		keepAlive_ = false;
 		isInit_ = false;
-		context_ = context;
 		networkCount_ = 0;
 	}
 	
@@ -64,6 +65,7 @@ public class Branch {
 		if (branchReferral_ == null) {
 			branchReferral_ = Branch.initInstance(context);
 		}
+		branchReferral_.context_ = context;
 		branchReferral_.prefHelper_.setAppKey(key);
 		return branchReferral_;
 	}
@@ -72,6 +74,7 @@ public class Branch {
 		if (branchReferral_ == null) {
 			branchReferral_ = Branch.initInstance(context);
 		}
+		branchReferral_.context_ = context;
 		return branchReferral_;
 	}
 	
@@ -147,7 +150,7 @@ public class Branch {
 			}).start();
 			isInit_ = true;
 		} else if (hasUser() && hasSession() && !installOrOpenInQueue()) {
-			if (callback != null) callback.onInitFinished(getReferringParams());
+			if (callback != null) callback.onInitFinished(new JSONObject());
 		} else {
 			if ((!hasUser() || !hasSession()) && !installOrOpenInQueue()) {
 				new Thread(new Runnable() {
@@ -163,22 +166,16 @@ public class Branch {
 	}
 	
 	public void closeSession() {
-		if (closeTimer == null)
+		if (keepAlive_)
 			return;
-		clearTimer();
-		closeTimer.schedule(new TimerTask() {
+		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						isInit_ = false;
-						requestQueue_.add(new ServerRequest(BranchRemoteInterface.REQ_TAG_REGISTER_CLOSE, null));
-						processNextQueueItem();
-					}
-				}).start();
+				isInit_ = false;
+				requestQueue_.add(new ServerRequest(BranchRemoteInterface.REQ_TAG_REGISTER_CLOSE, null));
+				processNextQueueItem();
 			}
-		}, SESSION_KEEPALIVE);
+		}).start();
 	}
 	
 	public boolean isIdentified() {
@@ -494,7 +491,7 @@ public class Branch {
 				ServerRequest req = requestQueue_.get(0);
 				
 				if (!req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_CLOSE)) {
-					clearTimer();
+					keepAlive();
 				}
 				
 				if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL)) {
@@ -645,6 +642,22 @@ public class Branch {
 		closeTimer = new Timer();
 	}
 	
+	private void keepAlive() {
+		keepAlive_ = true;
+		clearTimer();
+		closeTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						keepAlive_ = false;
+					}
+				}).start();
+			}
+		}, SESSION_KEEPALIVE);
+	}
+	
 	private boolean hasAppKey() {
 		return !prefHelper_.getAppKey().equals(PrefHelper.NO_STRING_VALUE);
 	}
@@ -754,7 +767,9 @@ public class Branch {
 					
 					networkCount_ = 0;
 					if (status >= 400 && status < 500) {
-						Log.i("BranchSDK", "Branch API Error: " + serverResponse.getString("message"));
+						if (serverResponse.has("error") && serverResponse.getJSONObject("error").has("message")) {
+							Log.i("BranchSDK", "Branch API Error: " + serverResponse.getJSONObject("error").getString("message"));
+						}
 						requestQueue_.remove(0);
 					} else if (status != 200) {
 						retryLastRequest();
