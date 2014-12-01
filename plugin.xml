@@ -6,7 +6,7 @@
     <license>See docs</license>
     <keywords>branch,deep links</keywords>
     <js-module src="branch.js" name="Branch">
-        <clobbers target="branch" />
+        <clobbers target="Branch" />
     </js-module>
     <platform name="android">
         <config-file target="config.xml" parent="/*">
@@ -37,22 +37,22 @@
         
         <header-file src="nativelibs/Branch_iOS_SDK/Config.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/ServerResponse.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerResponse.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/ServerInterface.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerInterface.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/ServerRequest.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequest.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/SystemObserver.h" />
-        <source-file src="nativelibs/Branch_iOS_SDK/SystemObserver.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerResponse.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerInterface.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequest.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/SystemObserver.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.m" />
     </platform>
 </plugin>
