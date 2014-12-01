@@ -5,7 +5,7 @@
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
     <keywords>branch,deep links</keywords>
-    <js-module src="branch.js" name="Branch">
+    <js-module src="branch.js" name="branch">
         <clobbers target="Branch" />
     </js-module>
     <platform name="android">
