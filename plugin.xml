@@ -34,8 +34,12 @@
 
         <framework src="CoreTelephony.framework" weak="true" />
         <framework src="AdSupport.framework" weak="true" />
+        
+        <header-file src="nativelibs/Branch_iOS_SDK/Config.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/ServerResponse.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerResponse.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
         <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.h" />
@@ -48,5 +52,7 @@
         <source-file src="nativelibs/Branch_iOS_SDK/ServerRequest.m" />
         <header-file src="nativelibs/Branch_iOS_SDK/SystemObserver.h" />
         <source-file src="nativelibs/Branch_iOS_SDK/SystemObserver.m" />
+        <header-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.h" />
+        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.m" />
     </platform>
 </plugin>
