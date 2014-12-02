@@ -14,15 +14,14 @@
 // Exec API
 - (void)getInstance:(CDVInvokedUrlCommand*)command;
 
-- (void)initUserSession:(CDVInvokedUrlCommand*)command;
+- (void)initSession:(CDVInvokedUrlCommand*)command;
 - (void)closeSession:(CDVInvokedUrlCommand*)command;
 
-- (void)getInstallReferringParams:(CDVInvokedUrlCommand*)command;
-- (void)getReferringParams:(CDVInvokedUrlCommand*)command;
+- (void)getFirstReferringParams:(CDVInvokedUrlCommand*)command;
+- (void)getLatestReferringParams:(CDVInvokedUrlCommand*)command;
 
-- (void)hasIdentity:(CDVInvokedUrlCommand*)command;
-- (void)identifyUser:(CDVInvokedUrlCommand*)command;
-- (void)clearUser:(CDVInvokedUrlCommand*)command;
+- (void)setIdentity:(CDVInvokedUrlCommand*)command;
+- (void)logout:(CDVInvokedUrlCommand*)command;
 
 - (void)userCompletedAction:(CDVInvokedUrlCommand*)command;
 

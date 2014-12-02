@@ -16,7 +16,7 @@ Branch.prototype.getInstance = function(app_key, callback) {
 	);
 };
 
-Branch.prototype.initUserSession = function(is_referrable, callback) {
+Branch.prototype.initSession = function(is_referrable, callback) {
 	var execArgs = [];
 	if (typeof is_referrable == 'function') { callback = is_referrable; }
 	else { execArgs.push(is_referrable); }
@@ -34,12 +34,12 @@ Branch.prototype.initUserSession = function(is_referrable, callback) {
 			if (callback) { callback({ }); }
 		},
 		"Branch", 
-		"initUserSession", 
+		"initSession", 
 		execArgs
 	);
 };
 
-Branch.prototype.getInstallReferringParams = function(callback) {
+Branch.prototype.getFirstReferringParams = function(callback) {
 	exec(
 		function(r) {
 			if (r.data) { 
@@ -52,12 +52,12 @@ Branch.prototype.getInstallReferringParams = function(callback) {
 			callback({ });
 		},
 		"Branch", 
-		"getInstallReferringParams", 
+		"getFirstReferringParams", 
 		[]
 	);
 };
 
-Branch.prototype.getReferringParams = function(callback) {
+Branch.prototype.getLatestReferringParams = function(callback) {
 	exec(
 		function(r) {
 			if (r.data) { 
@@ -70,7 +70,7 @@ Branch.prototype.getReferringParams = function(callback) {
 			callback({ });
 		},
 		"Branch", 
-		"getReferringParams", 
+		"getLatestReferringParams", 
 		[]
 	);
 };
@@ -85,25 +85,7 @@ Branch.prototype.closeSession = function() {
 	);
 };
 
-Branch.prototype.hasIdentity = function(callback) {
-	exec(
-		function(r) {
-			if (r.check) { 
-				callback(r.check); 
-			} else {
-				callback(false);
-			}
-		},
-		function(e) {
-			callback(false);
-		},
-		"Branch", 
-		"hasIdentity", 
-		[]
-	);
-};
-
-Branch.prototype.identifyUser = function(identity, callback) {
+Branch.prototype.setIdentity = function(identity, callback) {
 	var execArgs = [];
 	if (typeof identity == 'function') { callback = identity; }
 	else { execArgs.push(identity); }
@@ -121,17 +103,17 @@ Branch.prototype.identifyUser = function(identity, callback) {
 			if (callback) { callback({ }); }
 		},
 		"Branch", 
-		"identifyUser", 
+		"setIdentity", 
 		execArgs
 	);
 };
 
-Branch.prototype.clearUser = function() {
+Branch.prototype.logout = function() {
 	exec(
 		function(r) { },
 		function(e) { },
 		"Branch", 
-		"clearUser", 
+		"logout", 
 		[]
 	);
 };

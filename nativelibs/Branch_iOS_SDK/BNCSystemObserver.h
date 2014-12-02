@@ -1,5 +1,5 @@
 //
-//  SystemObserver.h
+//  BNCSystemObserver.h
 //  Branch-SDK
 //
 //  Created by Alex Austin on 6/5/14.
@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SystemObserver : NSObject
+@interface BNCSystemObserver : NSObject
 
-+ (NSString *)getUniqueHardwareId;
++ (NSString *)getUniqueHardwareId:(BOOL *)isReal;
 + (NSString *)getURIScheme;
 + (NSString *)getAppVersion;
 + (NSString *)getCarrier;

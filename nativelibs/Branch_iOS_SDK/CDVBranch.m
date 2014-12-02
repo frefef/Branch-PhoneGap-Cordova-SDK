@@ -31,7 +31,7 @@
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
 }
 
-- (void)initUserSession:(CDVInvokedUrlCommand*)command {
+- (void)initSession:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
@@ -39,12 +39,12 @@
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
     NSArray *args = command.arguments;
     if ([args count]) {
-        [self.branch initUserSessionWithCallback:^(NSDictionary *data) {
+        [self.branch initSession:[[args objectAtIndex:0] boolValue] andRegisterDeepLinkHandler:^(NSDictionary *data) {
             [retParams setObject:data forKey:@"data"];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
-        } andIsReferrable:[[args objectAtIndex:0] boolValue]];
+        }];
     } else {
-        [self.branch initUserSessionWithCallback:^(NSDictionary *data) {
+        [self.branch initSessionAndRegisterDeepLinkHandler:^(NSDictionary *data) {
             [retParams setObject:data forKey:@"data"];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
         }];
@@ -59,46 +59,38 @@
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
 }
 
-- (void)getInstallReferringParams:(CDVInvokedUrlCommand*)command {
+- (void)getFirstReferringParams:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [retParams setObject:[self.branch getInstallReferringParams] forKey:@"data"];
+    [retParams setObject:[self.branch getFirstReferringParams] forKey:@"data"];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
 }
-- (void)getReferringParams:(CDVInvokedUrlCommand*)command {
+- (void)getLatestReferringParams:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [retParams setObject:[self.branch getReferringParams] forKey:@"data"];
+    [retParams setObject:[self.branch getLatestReferringParams] forKey:@"data"];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
 }
 
-- (void)hasIdentity:(CDVInvokedUrlCommand*)command {
+- (void)setIdentity:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [retParams setObject:[NSNumber numberWithBool:[self.branch hasIdentity]] forKey:@"check"];
-    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
-}
-- (void)identifyUser:(CDVInvokedUrlCommand*)command {
-    if (!self.branch) {
-        self.branch = [Branch getInstance];
-    }
-    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [self.branch identifyUser:[command.arguments objectAtIndex:0] withCallback:^(NSDictionary *params) {
+    [self.branch setIdentity:[command.arguments objectAtIndex:0] withCallback:^(NSDictionary *params) {
         [retParams setObject:params forKey:@"data"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];
 }
-- (void)clearUser:(CDVInvokedUrlCommand*)command {
+- (void)logout:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
-    [self.branch clearUser];
+    [self.branch logout];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
 }
 

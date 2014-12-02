@@ -48,13 +48,13 @@ public class CDVBranch extends CordovaPlugin {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
-    	} else if (action.equals("initUserSession")) {
+    	} else if (action.equals("initSession")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		if (args.length() > 0) {
-    			this.branch_.initUserSession(new BranchReferralInitListener() {
+    			this.branch_.initSession(new BranchReferralInitListener() {
 					@Override
 					public void onInitFinished(JSONObject referringParams) {
 						intent_.setData(null);
@@ -67,7 +67,7 @@ public class CDVBranch extends CordovaPlugin {
 					}
     			}, args.getBoolean(0), intent_.getData());
     		} else {
-    			this.branch_.initUserSession(new BranchReferralInitListener() {
+    			this.branch_.initSession(new BranchReferralInitListener() {
 					@Override
 					public void onInitFinished(JSONObject referringParams) {
                         intent_.setData(null);
@@ -80,19 +80,19 @@ public class CDVBranch extends CordovaPlugin {
 					}
     			}, intent_.getData());
     		}
-    	} else if (action.equals("getInstallReferringParams")) {
+    	} else if (action.equals("getFirstReferringParams")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
-    		retParams.put("data", this.branch_.getInstallReferringParams());
+    		retParams.put("data", this.branch_.getFirstReferringParams());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
-    	} else if (action.equals("getReferringParams")) {
+    	} else if (action.equals("getLatestReferringParams")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
-    		retParams.put("data", this.branch_.getReferringParams());
+    		retParams.put("data", this.branch_.getLatestReferringParams());
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
     	} else if (action.equals("closeSession")) {
             if (this.branch_ == null) {
@@ -100,20 +100,13 @@ public class CDVBranch extends CordovaPlugin {
             }
             this.branch_.closeSession();
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
-        } else if (action.equals("hasIdentity")) {
-    		if (this.branch_ == null) {
-    			this.branch_ = Branch.getInstance(context_);
-    		}
-    		final JSONObject retParams = new JSONObject();
-    		retParams.put("check", this.branch_.isIdentified());
-    		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
-    	} else if (action.equals("identifyUser")) {
+        } else if (action.equals("setIdentity")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		final JSONObject retParams = new JSONObject();
     		if (args.length() > 0) {
-    			this.branch_.identifyUser(args.getString(0), new BranchReferralInitListener() {
+    			this.branch_.setIdentity(args.getString(0), new BranchReferralInitListener() {
 					@Override
 					public void onInitFinished(JSONObject referringParams) {
 						try {
@@ -127,11 +120,11 @@ public class CDVBranch extends CordovaPlugin {
     		} else {
     			callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, retParams));
     		}
-    	} else if (action.equals("clearUser")) {
+    	} else if (action.equals("logout")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
     		}
-    		this.branch_.clearUser();
+    		this.branch_.logout();
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
     	} else if (action.equals("userCompletedAction")) {
     		if (this.branch_ == null) {

@@ -1,5 +1,5 @@
 //
-//  SystemObserver.m
+//  BNCSystemObserver.m
 //  Branch-SDK
 //
 //  Created by Alex Austin on 6/5/14.
@@ -7,18 +7,20 @@
 //
 
 #include <sys/utsname.h>
-#import "PreferenceHelper.h"
-#import "SystemObserver.h"
+#import "BNCPreferenceHelper.h"
+#import "BNCSystemObserver.h"
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIScreen.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
-@implementation SystemObserver
+@implementation BNCSystemObserver
 
-+ (NSString *)getUniqueHardwareId {
++ (NSString *)getUniqueHardwareId:(BOOL *)isReal {
     NSString *uid = nil;
+    *isReal = YES;
+    
     Class ASIdentifierManagerClass = NSClassFromString(@"ASIdentifierManager");
     if (ASIdentifierManagerClass) {
         SEL sharedManagerSelector = NSSelectorFromString(@"sharedManager");
@@ -34,8 +36,9 @@
     
     if (!uid) {
         uid = [[NSUUID UUID] UUIDString];
+        *isReal = NO;
     }
-
+    
     return uid;
 }
 
@@ -100,13 +103,17 @@
 }
 
 + (NSNumber *)getScreenWidth {
-    CGSize size = [UIScreen mainScreen].bounds.size;
-    return [NSNumber numberWithInteger:(NSInteger)size.width];
+    UIScreen *mainScreen = [UIScreen mainScreen];
+    float scaleFactor = mainScreen.scale;
+    CGFloat width = mainScreen.bounds.size.width * scaleFactor;
+    return [NSNumber numberWithInteger:(NSInteger)width];
 }
 
 + (NSNumber *)getScreenHeight {
-    CGSize size = [UIScreen mainScreen].bounds.size;
-    return [NSNumber numberWithInteger:(NSInteger)size.height];
+    UIScreen *mainScreen = [UIScreen mainScreen];
+    float scaleFactor = mainScreen.scale;
+    CGFloat height = mainScreen.bounds.size.height * scaleFactor;
+    return [NSNumber numberWithInteger:(NSInteger)height];
 }
 
 @end

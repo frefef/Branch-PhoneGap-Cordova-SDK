@@ -1,19 +1,19 @@
 //
-//  ServerRequestQueue.m
-//  Experiment
+//  BNCServerRequestQueue.m
+//  Branch-SDK
 //
 //  Created by Qinwei Gong on 9/6/14.
 //
 //
 
-#import "ServerRequestQueue.h"
+#import "BNCServerRequestQueue.h"
 #import "BranchServerInterface.h"
-#import "Config.h"
+#import "BNCConfig.h"
 
 #define STORAGE_KEY     @"BNCServerRequestQueue"
 
 
-@interface ServerRequestQueue()
+@interface BNCServerRequestQueue()
 
 @property (nonatomic, strong) NSMutableArray *queue;
 @property (nonatomic) dispatch_queue_t asyncQueue;
@@ -24,7 +24,7 @@
 @end
 
 
-@implementation ServerRequestQueue
+@implementation BNCServerRequestQueue
 
 - (id)init {
     if (self = [super init]) {
@@ -34,62 +34,71 @@
     return self;
 }
 
-- (void)enqueue:(ServerRequest *)request {
+- (void)enqueue:(BNCServerRequest *)request {
     if (request) {
-        [self.queue addObject:request];
-        [self persist];
+        @synchronized(self.queue) {
+            [self.queue addObject:request];
+            [self persist];
+        }
     }
 }
 
-- (void)insert:(ServerRequest *)request at:(unsigned int)index {
+- (void)insert:(BNCServerRequest *)request at:(unsigned int)index {
     if (index > self.queue.count) {
         Debug(@"Invalid queue operation: index out of bound!");
         return;
     }
     
     if (request) {
-        [self.queue insertObject:request atIndex:index];
-        [self persist];
+        @synchronized(self.queue) {
+            [self.queue insertObject:request atIndex:index];
+            [self persist];
+        }
     }
 }
 
-- (ServerRequest *)dequeue {
-    ServerRequest *request = nil;
+- (BNCServerRequest *)dequeue {
+    BNCServerRequest *request = nil;
     
     if (self.queue.count > 0) {
-        request = [self.queue objectAtIndex:0];
-        [self.queue removeObjectAtIndex:0];
-        [self persist];
+        @synchronized(self.queue) {
+            request = [self.queue objectAtIndex:0];
+            [self.queue removeObjectAtIndex:0];
+            [self persist];
+        }
     }
     
     return request;
 }
 
-- (ServerRequest *)removeAt:(unsigned int)index {
+- (BNCServerRequest *)removeAt:(unsigned int)index {
     if (index >= self.queue.count) {
         Debug(@"Invalid queue operation: index out of bound!");
         return nil;
     }
     
-    ServerRequest *request = [self.queue objectAtIndex:index];
-    [self.queue removeObjectAtIndex:index];
-    [self persist];
+    BNCServerRequest *request;
+    @synchronized(self.queue) {
+        request = [self.queue objectAtIndex:index];
+        [self.queue removeObjectAtIndex:index];
+        [self persist];
+    }
     
     return request;
 }
 
 
-- (ServerRequest *)peek {
+- (BNCServerRequest *)peek {
     return [self peekAt:0];
 }
 
-- (ServerRequest *)peekAt:(unsigned int)index {
+- (BNCServerRequest *)peekAt:(unsigned int)index {
     if (index >= self.queue.count) {
         Debug(@"Invalid queue operation: index out of bound!");
         return nil;
     }
     
-    ServerRequest *request = nil;
+    BNCServerRequest *request = nil;
     request = [self.queue objectAtIndex:index];
     
     return request;
@@ -105,7 +114,7 @@
 
 - (BOOL)containsInstallOrOpen {
     for (int i = 0; i < self.queue.count; i++) {
-        ServerRequest *req = [self.queue objectAtIndex:i];
+        BNCServerRequest *req = [self.queue objectAtIndex:i];
         if ([req.tag isEqualToString:REQ_TAG_REGISTER_INSTALL] || [req.tag isEqualToString:REQ_TAG_REGISTER_OPEN]) {
             return YES;
         }
@@ -113,22 +122,26 @@
     return NO;
 }
 
-- (void)moveInstallOrOpenToFront:(NSString *)tag {
+- (void)moveInstallOrOpen:(NSString *)tag ToFront:(NSInteger)networkCount {
     for (int i = 0; i < self.queue.count; i++) {
-        ServerRequest *req = [self.queue objectAtIndex:i];
+        BNCServerRequest *req = [self.queue objectAtIndex:i];
         if ([req.tag isEqualToString:REQ_TAG_REGISTER_INSTALL] || [req.tag isEqualToString:REQ_TAG_REGISTER_OPEN]) {
             [self removeAt:i];
             break;
         }
     }
     
-    ServerRequest *req = [[ServerRequest alloc] initWithTag:tag];
-    [self insert:req at:0];
+    BNCServerRequest *req = [[BNCServerRequest alloc] initWithTag:tag];
+    if (networkCount == 0) {
+        [self insert:req at:0];
+    } else {
+        [self insert:req at:1];
+    }
 }
 
 - (BOOL)containsClose {
     for (int i = 0; i < self.queue.count; i++) {
-        ServerRequest *req = [self.queue objectAtIndex:i];
+        BNCServerRequest *req = [self.queue objectAtIndex:i];
         if ([req.tag isEqualToString:REQ_TAG_REGISTER_CLOSE]) {
             return YES;
         }
@@ -140,17 +153,18 @@
 #pragma mark - Private method
 
 - (void)persist {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     dispatch_async(self.asyncQueue, ^{
-        NSArray * copyQueue = [NSArray arrayWithArray:self.queue];
-        NSMutableArray *arr = [NSMutableArray array];
-        
-        for (ServerRequest *req in copyQueue) {
-            NSData *encodedReq = [NSKeyedArchiver archivedDataWithRootObject:req];
-            [arr addObject:encodedReq];
+        @synchronized(self.queue) {
+            NSMutableArray *arr = [NSMutableArray array];
+            
+            for (BNCServerRequest *req in self.queue) {
+                NSData *encodedReq = [NSKeyedArchiver archivedDataWithRootObject:req];
+                [arr addObject:encodedReq];
+            }
+            
+            [defaults setObject:arr forKey:STORAGE_KEY];
         }
-        
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:arr forKey:STORAGE_KEY];
         [defaults synchronize];
     });
 }
@@ -166,7 +180,7 @@
     
     NSArray *arr = (NSArray *)data;
     for (NSData *encodedRequest in arr) {
-        ServerRequest *request = [NSKeyedUnarchiver unarchiveObjectWithData:encodedRequest];
+        BNCServerRequest *request = [NSKeyedUnarchiver unarchiveObjectWithData:encodedRequest];
         [queue addObject:request];
     }
     
@@ -176,12 +190,12 @@
 #pragma mark - Singleton method
 
 + (id)getInstance {
-    static ServerRequestQueue *sharedQueue = nil;
+    static BNCServerRequestQueue *sharedQueue = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
-        sharedQueue = [[ServerRequestQueue alloc] init];
-        sharedQueue.queue = [ServerRequestQueue retrieve];
+        sharedQueue = [[BNCServerRequestQueue alloc] init];
+        sharedQueue.queue = [BNCServerRequestQueue retrieve];
         Debug(@"Retrieved from Persist: %@", sharedQueue);
     });
     

@@ -1,39 +1,37 @@
 //
-//  ServerInterface.m
+//  BNCServerInterface.m
 //  Branch-SDK
 //
 //  Created by Alex Austin on 6/6/14.
 //  Copyright (c) 2014 Branch Metrics. All rights reserved.
 //
 
-#import "ServerInterface.h"
-#import "PreferenceHelper.h"
-#import "Config.h"
+#import "BNCServerInterface.h"
+#import "BNCPreferenceHelper.h"
+#import "BNCConfig.h"
 
-@implementation ServerInterface
+@implementation BNCServerInterface
 
 // make a generalized get request
 - (void)getRequestAsync:(NSDictionary *)params url:(NSString *)url andTag:(NSString *)requestTag {
+    url = [url stringByAppendingString:@"?"];
+    
     if (params) {
         NSArray *allKeys = [params allKeys];
-        if ([allKeys count] > 0) {
-            url = [url stringByAppendingString:@"?"];
-        }
-        int count = (int)[allKeys count];
-        int i = 0;
+
         for (NSString *key in allKeys) {
             if ([key length] > 0) {
                 if ([params objectForKey:key]) {
                     url = [url stringByAppendingString:key];
                     url = [url stringByAppendingString:@"="];
                     url = [url stringByAppendingString:[[params objectForKey:key] description]];
-                    if(i < count-1)
-                        url = [url stringByAppendingString:@"&"];
+                    url = [url stringByAppendingString:@"&"];
                 }
             }
-            i = i + 1;
         }
     }
+    
+    url = [url stringByAppendingFormat:@"sdk=ios%@", SDK_VERSION];
     Debug(@"using url = %@", url);
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
@@ -49,7 +47,8 @@
 
 // make a generalized post request
 - (void)postRequestAsync:(NSDictionary *)post url:(NSString *)url andTag:(NSString *)requestTag {
-    NSData *postData = [ServerInterface encodePostParams:post];
+    [post setValue:[NSString stringWithFormat:@"ios%@", SDK_VERSION] forKey:@"sdk"];
+    NSData *postData = [BNCServerInterface encodePostParams:post];
     NSString *postLength = [NSString stringWithFormat:@"%lu", (unsigned long)[postData length]];
     
     Debug(@"using url = %@", url);
@@ -73,6 +72,10 @@
 }
 
 + (NSString *)encodePostToUniversalString:(NSDictionary *)params {
+    return [BNCServerInterface encodePostToUniversalString:params needSource:YES];
+}
+
++ (NSString *)encodePostToUniversalString:(NSDictionary *)params needSource:(BOOL)source {
     NSMutableString *encodedParams = [[NSMutableString alloc] initWithString:@"{ "];
     for (NSString *key in params) {
         NSString *value = nil;
@@ -80,7 +83,7 @@
         if ([[params objectForKey:key] isKindOfClass:[NSString class]]) {
             value = [params objectForKey:key];
         } else if ([[params objectForKey:key] isKindOfClass:[NSDictionary class]]) {
-            value = [ServerInterface encodePostToUniversalString:[params objectForKey:key]];
+            value = [BNCServerInterface encodePostToUniversalString:[params objectForKey:key]];
         } else if ([[params objectForKey:key] isKindOfClass:[NSNumber class]]) {
             value = [[params objectForKey:key] stringValue];
             string = NO;
@@ -93,22 +96,34 @@
         if (string) [encodedParams appendString:@"\","];
         else [encodedParams appendString:@","];
     }
-    [encodedParams appendString:@"\"source\":\"ios\" }"];
+    if (source) {
+        [encodedParams appendString:@"\"source\":\"ios\" }"];
+    } else {
+        [encodedParams deleteCharactersInRange:NSMakeRange([encodedParams length]-1, 1)];
+        [encodedParams appendString:@" }"];
+    }
+    
     Debug(@"encoded params : %@", encodedParams);
     return encodedParams;
 }
 
 - (void)genericHTTPRequest:(NSMutableURLRequest *)request withTag:(NSString *)requestTag {
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler: ^(NSURLResponse *response, NSData *POSTReply, NSError *error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSNumber *statusCode = [NSNumber numberWithLong:[httpResponse statusCode]];
-        
-        ServerResponse *serverResponse = [[ServerResponse alloc] initWithTag:requestTag andStatusCode:statusCode];
-        
-        if (POSTReply != nil) {
-            NSError *convError;
-            id jsonData = [NSJSONSerialization JSONObjectWithData:POSTReply options:NSJSONReadingMutableContainers error:&convError];
-            serverResponse.data = jsonData;            
+        BNCServerResponse *serverResponse;
+        if (!error) {
+            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+            NSNumber *statusCode = [NSNumber numberWithLong:[httpResponse statusCode]];
+            
+            serverResponse = [[BNCServerResponse alloc] initWithTag:requestTag andStatusCode:statusCode];
+            
+            if (POSTReply != nil) {
+                NSError *convError;
+                id jsonData = [NSJSONSerialization JSONObjectWithData:POSTReply options:NSJSONReadingMutableContainers error:&convError];
+                serverResponse.data = jsonData;
+            }
+        } else {
+            serverResponse = [[BNCServerResponse alloc] initWithTag:requestTag andStatusCode:[NSNumber numberWithInteger:error.code]];
+            serverResponse.data = error.userInfo;
         }
         
         Debug(@"returned = %@", [serverResponse description]);

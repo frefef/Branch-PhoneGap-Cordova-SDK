@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.3.1">
+        id="io.branchmetrics.branchreferral" version="0.3.2">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
@@ -22,6 +22,8 @@
         <source-file src="nativelibs/Branch_Android_SDK/PrefHelper.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/RemoteInterface.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/ServerRequest.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/ServerRequestQueue.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/ServerResponse.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/SystemObserver.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/ApkParser.java" target-dir="src/io/branch/referral"  />
     </platform>
@@ -35,24 +37,26 @@
         <framework src="CoreTelephony.framework" weak="true" />
         <framework src="AdSupport.framework" weak="true" />
         
-        <header-file src="nativelibs/Branch_iOS_SDK/Config.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCConfig.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCError.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/ServerResponse.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCServerResponse.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/ServerInterface.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/ServerRequest.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/SystemObserver.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCPreferenceHelper.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCServerInterface.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequest.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCSystemObserver.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequestQueue.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCError.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerResponse.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCServerResponse.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BranchServerInterface.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/PreferenceHelper.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerInterface.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequest.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/SystemObserver.m" />
-        <source-file src="nativelibs/Branch_iOS_SDK/ServerRequestQueue.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCPreferenceHelper.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCServerInterface.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCServerRequest.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCSystemObserver.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCServerRequestQueue.m" />
     </platform>
 </plugin>

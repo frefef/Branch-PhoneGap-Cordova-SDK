@@ -26,20 +26,27 @@ public class SystemObserver {
 	public static final String BLANK = "bnc_no_value";
 
 	private Context context_;
+	private boolean isRealHardwareId;
 	
 	public SystemObserver(Context context) {
 		context_ = context;
+		isRealHardwareId = true;
 	}
 	
 	public String getUniqueID() {
 		if (context_ != null) { 
 			String androidID = Secure.getString(context_.getContentResolver(), Secure.ANDROID_ID);
 			if (androidID == null) {
-				androidID = UUID.randomUUID().toString();;
+				androidID = UUID.randomUUID().toString();
+				isRealHardwareId = false;
 			}
 			return androidID;
 		} else 
 			return BLANK;
+	}
+	
+	public boolean hasRealHardwareId() {
+		return isRealHardwareId;
 	}
 	
 	public String getURIScheme() {
@@ -57,10 +64,8 @@ public class SystemObserver {
 	            jf.close();
 	            return scheme;
 	          } catch (Exception ex) {
-	        	  ex.printStackTrace();
 	          }
 	    } catch (NameNotFoundException e) {
-	        e.printStackTrace();
 	    }
 		return BLANK;
 	}
@@ -73,7 +78,6 @@ public class SystemObserver {
 			 else
 				 return BLANK;
 		 } catch (NameNotFoundException e) {
-			 e.printStackTrace();
 		 }
 		 return BLANK;
 	}
@@ -95,7 +99,6 @@ public class SystemObserver {
                 return bluetoothAdapter.isEnabled();
             }
         } catch (SecurityException e) {
-            e.printStackTrace();
         }
         return false;
 	}
@@ -116,7 +119,6 @@ public class SystemObserver {
 		try {
 			return context_.getPackageManager().hasSystemFeature("android.hardware.nfc");
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
@@ -125,7 +127,6 @@ public class SystemObserver {
 		try {
 			return context_.getPackageManager().hasSystemFeature("android.hardware.telephony");
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
@@ -157,7 +158,6 @@ public class SystemObserver {
 					return 0;
 				}
 			} catch (NameNotFoundException e) {
-				e.printStackTrace();
 			}
 		}
 		return 0;
