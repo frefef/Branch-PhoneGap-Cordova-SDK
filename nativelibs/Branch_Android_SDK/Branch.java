@@ -35,7 +35,7 @@ public class Branch {
 	public static int REFERRAL_CODE_AWARD_UNLIMITED = 1;
 	public static int REFERRAL_CODE_AWARD_UNIQUE = 0;
 	
-	private static final int SESSION_KEEPALIVE = 5000;
+	private static final int SESSION_KEEPALIVE = 100;
 	private static final int INTERVAL_RETRY = 3000;
 	private static final int MAX_RETRIES = 5;
 

@@ -39,12 +39,12 @@
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
     NSArray *args = command.arguments;
     if ([args count]) {
-        [self.branch initSession:[[args objectAtIndex:0] boolValue] andRegisterDeepLinkHandler:^(NSDictionary *data) {
+        [self.branch initSession:[[args objectAtIndex:0] boolValue] andRegisterDeepLinkHandler:^(NSDictionary *data, NSError *error) {
             [retParams setObject:data forKey:@"data"];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
         }];
     } else {
-        [self.branch initSessionAndRegisterDeepLinkHandler:^(NSDictionary *data) {
+        [self.branch initSessionAndRegisterDeepLinkHandler:^(NSDictionary *data, NSError *error) {
             [retParams setObject:data forKey:@"data"];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
         }];
@@ -81,7 +81,7 @@
         self.branch = [Branch getInstance];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [self.branch setIdentity:[command.arguments objectAtIndex:0] withCallback:^(NSDictionary *params) {
+    [self.branch setIdentity:[command.arguments objectAtIndex:0] withCallback:^(NSDictionary *params, NSError *error) {
         [retParams setObject:params forKey:@"data"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];
@@ -135,7 +135,7 @@
         }
     }
 
-    [self.branch getShortURLWithParams:data andChannel:channel andFeature:feature andCallback:^(NSString *url) {
+    [self.branch getShortURLWithParams:data andChannel:channel andFeature:feature andCallback:^(NSString *url, NSError *error) {
         [retParams setObject:url forKey:@"url"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];
@@ -156,7 +156,7 @@
         }
     }
 
-    [self.branch getContentUrlWithParams:data andChannel:channel andCallback:^(NSString *url) {
+    [self.branch getContentUrlWithParams:data andChannel:channel andCallback:^(NSString *url, NSError *error) {
         [retParams setObject:url forKey:@"url"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];

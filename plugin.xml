@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.3.3">
+        id="io.branchmetrics.branchreferral" version="0.3.6">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
@@ -34,8 +34,10 @@
             </feature>
         </config-file>
 
-        <framework src="CoreTelephony.framework" weak="true" />
-        <framework src="AdSupport.framework" weak="true" />
+        <framework src="UIKit.framework"/>
+        <framework src="Foundation.framework"/>
+        <framework src="CoreTelephony.framework"/>
+        <framework src="AdSupport.framework"/>
         
         <header-file src="nativelibs/Branch_iOS_SDK/BNCConfig.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCError.h" />
