@@ -128,6 +128,8 @@ Some example events you might want to track:
 
 There are a bunch of options for creating these links. You can tag them for analytics in the dashboard, or you can even pass data to the new installs or opens that come from the link click. How awesome is that? You need to pass a callback for when you link is prepared (which should return very quickly, ~ 50 ms to process).
 
+For more details on how to create links, see the (Branch link creation guide)[https://github.com/BranchMetrics/Branch-Integration-Guides/blob/master/url-creation-guide.md]
+
 ```js
 // associate data with a link
 // you can access this data from any instance that installs or opens the app from this link (amazing...)
@@ -153,19 +155,19 @@ There are other methods which exclude tag and data if you don't want to pass tho
 
 **Note**
 You can customize the Facebook OG tags of each URL if you want to dynamically share content by using the following optional keys in the params dictionary:
-```objc
-@"$og_app_id"
-@"$og_title"
-@"$og_description"
-@"$og_image_url"
-@"$og_video"
-@"$og_url"
+```js
+"$og_app_id"
+"$og_title"
+"$og_description"
+"$og_image_url"
+"$og_video"
+"$og_url"
 ```
 
 Also, you do custom redirection by inserting the following optional keys in the dictionary. For example, if you want to send users on the desktop to a page on your website, insert the $desktop_url with that URL value
-```objc
-@"$desktop_url"
-@"$android_url"
-@"$ios_url"
-@"$ipad_url"
+```js
+"$desktop_url"
+"$android_url"
+"$ios_url"
+"$ipad_url"
 ```
