@@ -1,6 +1,6 @@
 
 
-## Installation
+## Installation - Branch PhoneGap or Cordova SDK
 
 ### Available in Cordova
 
