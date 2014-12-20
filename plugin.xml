@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.3.6">
+        id="io.branchmetrics.branchreferral" version="0.3.7">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
@@ -50,7 +50,7 @@
         <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequest.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCSystemObserver.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequestQueue.h" />
-        <header-file src="nativelibs/Branch_iOS_SDK/BNCError.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCError.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCServerResponse.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />
