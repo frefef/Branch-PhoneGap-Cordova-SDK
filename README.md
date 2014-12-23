@@ -10,7 +10,7 @@ Branch is available through [Cordova](http://plugins.cordova.io/#/package/io.bra
 
 ### Register you app
 
-You can sign up for your own app id at http://dashboard.branch.io
+You can sign up for your own app id at [https://dashboard.branch.io](https://dashboard.branch.io)
 
 ## Configuration (for tracking)
 
@@ -31,7 +31,7 @@ This deep link routing callback is called 100% of the time on init, with your li
 ```js
 var branch = window.Branch;
 // Arguments
-// arg1: Your app key can be retrieved on the Settings page of the dashboard
+// arg1: Your app key can be retrieved on the [Settings](https://dashboard.branch.io/#/settings) page of the dashboard
 // arg2: the callback to notify you that the instance has instantiated
 branch.getInstance("Your app key here", function() {
 
@@ -128,7 +128,7 @@ Some example events you might want to track:
 
 There are a bunch of options for creating these links. You can tag them for analytics in the dashboard, or you can even pass data to the new installs or opens that come from the link click. How awesome is that? You need to pass a callback for when you link is prepared (which should return very quickly, ~ 50 ms to process).
 
-For more details on how to create links, see the (Branch link creation guide)[https://github.com/BranchMetrics/Branch-Integration-Guides/blob/master/url-creation-guide.md]
+For more details on how to create links, see the [Branch link creation guide](https://github.com/BranchMetrics/Branch-Integration-Guides/blob/master/url-creation-guide.md)
 
 ```js
 // associate data with a link
