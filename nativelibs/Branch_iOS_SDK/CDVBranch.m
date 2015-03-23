@@ -31,6 +31,14 @@
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
 }
 
+- (void)setDebug:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    [Branch setDebug];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
+}
+
 - (void)initSession:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
@@ -160,6 +168,99 @@
         [retParams setObject:url forKey:@"url"];
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
     }];
+}
+
+- (void)loadActionCounts:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [self.branch loadActionCountsWithCallback:^(BOOL changed, NSError *error) {
+        [retParams setObject:[NSNumber numberWithBool:changed] forKey:@"changed"];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+    }];
+}
+
+- (void)loadRewards:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [self.branch loadRewardsWithCallback:^(BOOL changed, NSError *error) {
+        [retParams setObject:[NSNumber numberWithBool:changed] forKey:@"changed"];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+    }];
+}
+
+- (void)getCreditHistory:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [self.branch getCreditHistoryWithCallback:^(NSArray *list, NSError *error) {
+        [retParams setObject:list forKey:@"list"];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+    }];
+}
+
+- (void)getCredits:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSString *bucket = nil;
+    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+        bucket = [command.arguments objectAtIndex:0];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [retParams setObject:[NSNumber numberWithInteger:[self.branch getCreditsForBucket:bucket]] forKey:@"credits"];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+}
+
+- (void)redeemRewards:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSString *bucket = nil;
+    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+        bucket = [command.arguments objectAtIndex:0];
+    }
+    NSInteger credits = 0;
+    NSString *bucket = nil;
+    for (id object in command.arguments) {
+        if ([object isKindOfClass:[NSString class]]) {
+            bucket = object;
+        } else {
+            credits = [object integerValue];
+        }
+    }
+    [self.branch redeemRewards:credits forBucket:bucket];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
+}
+
+- (void)getTotalCountsForAction:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSString *bucket = nil;
+    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+        bucket = [command.arguments objectAtIndex:0];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [retParams setObject:[NSNumber numberWithInteger:[self.branch getTotalCountsForAction:bucket]] forKey:@"count"];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
+}
+
+- (void)getUniqueCountsForAction:(CDVInvokedUrlCommand*)command {
+    if (!self.branch) {
+        self.branch = [Branch getInstance];
+    }
+    NSString *action = nil;
+    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+        action = [command.arguments objectAtIndex:0];
+    }
+    NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
+    [retParams setObject:[NSNumber numberWithInteger:[self.branch getUniqueCountsForAction:bucket]] forKey:@"count"];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
 }
 
 @end

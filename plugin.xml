@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.3.7">
+        id="io.branchmetrics.branchreferral" version="0.4.0">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
-    <keywords>branch,deep links</keywords>
+    <keywords>branch,deep links,referral,tracking,analytics,growth</keywords>
     <js-module src="branch.js" name="branch">
         <clobbers target="Branch" />
     </js-module>
@@ -15,6 +15,8 @@
             </feature>
         </config-file>
         <source-file src="nativelibs/Branch_Android_SDK/Branch.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/BranchError.java" target-dir="src/io/branch/referral"  />
+        <source-file src="nativelibs/Branch_Android_SDK/BranchLinkData.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/Base64.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/BranchRemoteInterface.java" target-dir="src/io/branch/referral"  />
         <source-file src="nativelibs/Branch_Android_SDK/CDVBranch.java" target-dir="src/io/branch/referral"  />
@@ -39,8 +41,11 @@
         <framework src="CoreTelephony.framework"/>
         <framework src="AdSupport.framework"/>
         
+        <header-file src="nativelibs/Branch_iOS_SDK/BranchActivityItemProvider.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCConfig.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCError.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCLinkCache.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCLinkData.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCServerResponse.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/Branch.h" />
@@ -50,7 +55,11 @@
         <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequest.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCSystemObserver.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCServerRequestQueue.h" />
+
+        <source-file src="nativelibs/Branch_iOS_SDK/BranchActivityItemProvider.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCError.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCLinkCache.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCLinkData.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCServerResponse.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/Branch.m" />

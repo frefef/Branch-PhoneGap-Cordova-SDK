@@ -16,6 +16,16 @@ Branch.prototype.getInstance = function(app_key, callback) {
 	);
 };
 
+Branch.prototype.setDebug = function() {
+	exec(
+		function(r) { },
+		function(e) { },
+		"Branch", 
+		"setDebug", 
+		[]
+	);
+};
+
 Branch.prototype.initSession = function(is_referrable, callback) {
 	var execArgs = [];
 	if (typeof is_referrable == 'function') { callback = is_referrable; }
@@ -167,6 +177,131 @@ Branch.prototype.getContentUrl = function(data, channel, callback) {
 		},
 		"Branch", 
 		"getContentUrl", 
+		execArgs
+	);
+};
+
+Branch.prototype.loadActionCounts = function(callback) {
+	exec(
+		function(r) {
+			if (r.changed) { 
+				callback(r.changed); 
+			} else {
+				callback(false);
+			}
+		},
+		function(e) { 
+			callback(false);
+		},
+		"Branch", 
+		"loadActionCounts", 
+		execArgs
+	);
+};
+
+Branch.prototype.loadRewards = function(callback) {
+	exec(
+		function(r) {
+			if (r.changed) { 
+				callback(r.changed); 
+			} else {
+				callback(false);
+			}
+		},
+		function(e) { 
+			callback(false);
+		},
+		"Branch", 
+		"loadRewards", 
+		execArgs
+	);
+};
+
+Branch.prototype.getCreditHistory = function(callback) {
+	exec(
+		function(r) {
+			if (r.list) { 
+				callback(r.list); 
+			} else {
+				callback([]);
+			}
+		},
+		function(e) { 
+			callback([]);
+		},
+		"Branch", 
+		"getCreditHistory", 
+		execArgs
+	);
+};
+
+Branch.prototype.getCredits = function(bucket, callback) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	callback = execArgs.pop();
+	exec(
+		function(r) {
+			if (r.credits) { 
+				callback(r.credits); 
+			} else {
+				callback(0);
+			}
+		},
+		function(e) {
+			callback(0);
+		},
+		"Branch", 
+		"getCredits", 
+		execArgs
+	);
+};
+
+Branch.prototype.redeemRewards = function(amount, bucket) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	exec(
+		function(r) { },
+		function(e) { },
+		"Branch", 
+		"redeemRewards", 
+		execArgs
+	);
+};
+
+Branch.prototype.getTotalCountsForAction = function(action, callback) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	callback = execArgs.pop();
+	exec(
+		function(r) {
+			if (r.count) { 
+				callback(r.count); 
+			} else {
+				callback(0);
+			}
+		},
+		function(e) {
+			callback(0);
+		},
+		"Branch", 
+		"getTotalCountsForAction", 
+		execArgs
+	);
+};
+
+Branch.prototype.getUniqueCountsForAction = function(action, callback) {
+	var execArgs = Array.prototype.slice.apply(arguments);
+	callback = execArgs.pop();
+	exec(
+		function(r) {
+			if (r.count) { 
+				callback(r.count); 
+			} else {
+				callback(0);
+			}
+		},
+		function(e) {
+			callback(0);
+		},
+		"Branch", 
+		"getUniqueCountsForAction", 
 		execArgs
 	);
 };

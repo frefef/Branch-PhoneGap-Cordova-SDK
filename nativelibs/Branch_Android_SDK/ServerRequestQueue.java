@@ -11,16 +11,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 public class ServerRequestQueue {
 	private static final String PREF_KEY = "BNCServerRequestQueue";
+	private static final int MAX_ITEMS = 25;
 	private static ServerRequestQueue SharedInstance;	
 	private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
-	private List<ServerRequest> queue;
+	private final List<ServerRequest> queue;
 
     public static ServerRequestQueue getInstance(Context c) {
     	if(SharedInstance == null) {
@@ -32,7 +33,9 @@ public class ServerRequestQueue {
     	}
     	return SharedInstance;
     }
-    
+
+
+    @SuppressLint( "CommitPrefEdits" )
     private ServerRequestQueue (Context c) {
     	sharedPref = c.getSharedPreferences("BNC_Server_Request_Queue", Context.MODE_PRIVATE);
 		editor = sharedPref.edit();
@@ -45,22 +48,21 @@ public class ServerRequestQueue {
 			public void run() {
 				JSONArray jsonArr = new JSONArray();
 				synchronized(queue) {
-					Iterator<ServerRequest> iter = queue.iterator();
-					while (iter.hasNext()) {
-						JSONObject json = iter.next().toJSON();
-						if (json != null) {
-							jsonArr.put(json);
-						}
-					}
+                    for (ServerRequest aQueue : queue) {
+                        JSONObject json = aQueue.toJSON();
+                        if (json != null) {
+                            jsonArr.put( json );
+                        }
+                    }
 					
 					try {
 						editor.putString(PREF_KEY, jsonArr.toString()).commit();
 					} catch (ConcurrentModificationException ex) {
-						if (PrefHelper.LOG) Log.i("Persisting Queue: ", jsonArr.toString());
+						PrefHelper.Debug("Persisting Queue: ", jsonArr.toString());
 					} finally {
 						try {
 							editor.putString(PREF_KEY, jsonArr.toString()).commit();
-						} catch (ConcurrentModificationException ex) {}
+						} catch (ConcurrentModificationException ignored) {}
 					}
 				}
 			}
@@ -81,7 +83,7 @@ public class ServerRequestQueue {
     					result.add(req);
     				}
     			}
-    		} catch (JSONException e) {
+    		} catch (JSONException ignored) {
     		}
     	}
     	
@@ -95,6 +97,9 @@ public class ServerRequestQueue {
 	public void enqueue(ServerRequest request) {
 		if (request != null) {
 			queue.add(request);
+			if (getSize() >= MAX_ITEMS) {
+				queue.remove(1);				
+			}
 			persist();
 		}
 	}
@@ -104,37 +109,37 @@ public class ServerRequestQueue {
 		try {
 			req = queue.remove(0);
 			persist();
-		} catch (IndexOutOfBoundsException ex) {
-		} catch (NoSuchElementException ex) {
+		} catch (IndexOutOfBoundsException ignored) {
+		} catch (NoSuchElementException ignored) {
 		}
-		return req;
+        return req;
 	}
 
 	public ServerRequest peek() {
 		ServerRequest req = null;
 		try {
 			req = queue.get(0);
-		} catch (IndexOutOfBoundsException ex) {
-		} catch (NoSuchElementException ex) {
+		} catch (IndexOutOfBoundsException ignored) {
+		} catch (NoSuchElementException ignored) {
 		}
-		return req;
+        return req;
 	}
 	
 	public ServerRequest peekAt(int index) {
 		ServerRequest req = null;
 		try {
 			req = queue.get(index);
-		} catch (IndexOutOfBoundsException ex) {
-		} catch (NoSuchElementException ex) {
+		} catch (IndexOutOfBoundsException ignored) {
+		} catch (NoSuchElementException ignored) {
 		}
-		return req;
+        return req;
 	}
 	
 	public void insert(ServerRequest request, int index) {
 		try {
 			queue.add(index, request);
 			persist();
-		} catch (IndexOutOfBoundsException ex) {
+		} catch (IndexOutOfBoundsException ignored) {
 		}
 	}
 	
@@ -143,20 +148,29 @@ public class ServerRequestQueue {
 		try {
 			req = queue.remove(index);
 			persist();
-		} catch (IndexOutOfBoundsException ex) {
+		} catch (IndexOutOfBoundsException ignored) {
 		}
 		return req;
 	}
 
+	public boolean containsClose() {
+		synchronized(queue) {
+            for (ServerRequest req : queue) {
+                if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_CLOSE)) {
+                    return true;
+                }
+            }
+		}
+		return false;
+	}
+	
 	public boolean containsInstallOrOpen() {
 		synchronized(queue) {
-			Iterator<ServerRequest> iter = queue.iterator();
-			while (iter.hasNext()) {
-				ServerRequest req = iter.next();
-				if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL) || req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_OPEN)) {
-					return true;
-				}
-			}
+            for (ServerRequest req : queue) {
+                if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL) || req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_OPEN)) {
+                    return true;
+                }
+            }
 		}
 		return false;
 	}
@@ -167,6 +181,11 @@ public class ServerRequestQueue {
 			while (iter.hasNext()) {
 				ServerRequest req = iter.next();
 				if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL) || req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_OPEN)) {
+					if (req.getTag().equals(BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL)) {
+						tag = BranchRemoteInterface.REQ_TAG_REGISTER_INSTALL;
+					} else {
+						tag = BranchRemoteInterface.REQ_TAG_REGISTER_OPEN;
+					}
 					iter.remove();
 					break;
 				}

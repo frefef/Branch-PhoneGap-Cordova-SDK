@@ -1,14 +1,25 @@
 package io.branch.referral;
 
-import android.util.Log;
-
+/**
+ * ApkParser
+ *
+ * <P>Parses the 'compressed' binary form of Android XML docs, such as AndroidManifest.xml, that
+ * are contained within an APK file.
+ *
+ * @author Alex Austin
+ */
 public class ApkParser {
 	// decompressXML -- Parse the 'compressed' binary form of Android XML docs 
 	// such as for AndroidManifest.xml in .apk files
 	public static int endDocTag = 0x00100101;
 	public static int startTag =  0x00100102;
 	public static int endTag =    0x00100103;
-	
+
+    /**
+     * Returns the result of decompression of XML as a {@link String}.
+     * @param xml A {@link Byte[]} containing the XML to be decompressed.
+     * @return A {@link String} containing the result of the decompression action.
+     */
 	public String decompressXML(byte[] xml) {
 		// Compressed XML file/bytes starts with 24x bytes of data,
 		// 9 32 bit words in little endian order (LSB first):
@@ -61,19 +72,14 @@ public class ApkParser {
 		//   4th word: str ind of attr value again, or ResourceId of value
 	
 		// Step through the XML tree element tags and attributes
+		String attrValue;
+		String attrName;
 		int off = xmlTagOff;
-		int indent = 0;
-		int startTagLineNo = -2;
 		while (off < xml.length) {
 			int tag0 = LEW(xml, off);
-			int lineNo = LEW(xml, off+2*4);
-			int nameSi = LEW(xml, off+5*4);
-		
 			if (tag0 == startTag) { // XML START TAG
 				int numbAttrs = LEW(xml, off+7*4);  // Number of Attributes to follow
-				off += 9*4;  // Skip over 6+3 words of startTag data
-				startTagLineNo = lineNo;
-		
+				off += 9*4;  // Skip over 6+3 words of startTag data		
 				// Look for the Attributes
 				for (int ii=0; ii<numbAttrs; ii++) {
 					int attrNameSi = LEW(xml, off+1*4);  // AttrName String Index
@@ -81,45 +87,89 @@ public class ApkParser {
 					int attrResId = LEW(xml, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
 					off += 5*4;  // Skip over the 5 words of an attribute
 		
-					String attrName = compXmlString(xml, sitOff, stOff, attrNameSi);
-					String attrValue = attrValueSi!=-1 ? compXmlString(xml, sitOff, stOff, attrValueSi) : "resourceID 0x"+Integer.toHexString(attrResId);
-					//if (PrefHelper.LOG) Log.i("BranchAPKParser", "name = " + attrName + ", value = " + attrValue);
+					attrName = compXmlString(xml, sitOff, stOff, attrNameSi);
 					if (attrName.equals("scheme")) {
-						return attrValue;
+						attrValue = attrValueSi!=-1 ? compXmlString(xml, sitOff, stOff, attrValueSi) : "resourceID 0x"+Integer.toHexString(attrResId);
+						if (validURI(attrValue))
+							return attrValue;
 					}
 				}
-				indent++;
 		
 			} else if (tag0 == endTag) { // XML END TAG
-				indent--;
 				off += 6*4;  // Skip over 6 words of endTag data
-				String name = compXmlString(xml, sitOff, stOff, nameSi);
-				prtIndent(indent, "</"+name+">  (line "+startTagLineNo+"-"+lineNo+")");		
 			} else if (tag0 == endDocTag) {  // END OF XML DOC TAG
 				break;
 			} else {
-				//if (PrefHelper.LOG) Log.i("BranchAPKParser", "  Unrecognized tag code '"+Integer.toHexString(tag0) +"' at offset "+off);
 				break;
 			}
 		} // end of while loop scanning tags and attributes of XML tree
-		if (PrefHelper.LOG) Log.i("BranchAPKParser", "    end at offset "+off);
 		
 		return SystemObserver.BLANK;
 	} // end of decompressXML
 
+    /**
+     * <P>Checks whether the supplied {@link String} is of a valid/known URI protocol type.</P>
+     *
+     * <P>
+     *     Valid protocol types:
+     * <ul>
+     *     <li>http</li>
+     *     <li>https</li>
+     *     <li>geo</li>
+     *     <li>*</li>
+     *     <li>package</li>
+     *     <li>sms</li>
+     *     <li>smsto</li>
+     *     <li>mms</li>
+     *     <li>mmsto</li>
+     *     <li>tel</li>
+     *     <li>voicemail</li>
+     *     <li>file</li>
+     *     <li>content</li>
+     *     <li>mailto</li>
+     * </ul>
+     *
+     * </P>
+     *
+     * @param value The {@link String} value to be assessed.
+     * @return A {@link Boolean} value; if valid returns true, else false.
+     */
+	private boolean validURI(String value) {
+		if (value != null) {
+			if (!value.equals("http") 
+					&& !value.equals("https") 
+					&& !value.equals("geo") 
+					&& !value.equals("*") 
+					&& !value.equals("package") 
+					&& !value.equals("sms") 
+					&& !value.equals("smsto")
+					&& !value.equals("mms") 
+					&& !value.equals("mmsto")
+					&& !value.equals("tel")
+					&& !value.equals("voicemail")
+					&& !value.equals("file")
+					&& !value.equals("content")
+					&& !value.equals("mailto")) {
+				return true;
+			}
+		}
+		return false;
+	}
 
+    /**
+     *
+     *
+     * @param xml
+     * @param sitOff
+     * @param stOff
+     * @param strInd
+     * @return
+     */
 	public String compXmlString(byte[] xml, int sitOff, int stOff, int strInd) {
 		if (strInd < 0) return null;
 		int strOff = stOff + LEW(xml, sitOff+strInd*4);
 		return compXmlStringAt(xml, strOff);
 	}
-
-
-	public static String spaces = "                                             ";
-	public void prtIndent(int indent, String str) {
-		if (PrefHelper.LOG) Log.i("BranchAPKParser", (spaces.substring(0, Math.min(indent*2, spaces.length()))+str));
-	}
-
 
 	// compXmlStringAt -- Return the string stored in StringTable format at
 	// offset strOff.  This offset points to the 16 bit string length, which 
@@ -133,9 +183,15 @@ public class ApkParser {
 		return new String(chars);  // Hack, just use 8 byte chars
 	} // end of compXmlStringAt
 
-
-	// LEW -- Return value of a Little Endian 32 bit word from the byte array
-	//   at offset off.
+    /**
+     * LEW (Little-Endian Word)
+     *
+     * @param arr The {@link Byte[]} to process.
+     * @param off An {@link int} value indicating the offset from which the return value should be
+     *            taken.
+     * @return The {@link int} Little Endian 32 bit word taken from the input {@link Byte[]} at the
+     * {@link int} offset provided.
+     */
 	public int LEW(byte[] arr, int off) {
 		return arr[off+3]<<24&0xff000000 | arr[off+2]<<16&0xff0000 | arr[off+1]<<8&0xff00 | arr[off]&0xFF;
 	} // end of LEW

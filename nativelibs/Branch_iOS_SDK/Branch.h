@@ -7,6 +7,7 @@
 //
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "BranchActivityItemProvider.h"
 
 typedef void (^callbackWithParams) (NSDictionary *params, NSError *error);
 typedef void (^callbackWithUrl) (NSString *url, NSError *error);
@@ -18,6 +19,15 @@ static NSString *BRANCH_FEATURE_TAG_REFERRAL = @"referral";
 static NSString *BRANCH_FEATURE_TAG_INVITE = @"invite";
 static NSString *BRANCH_FEATURE_TAG_DEAL = @"deal";
 static NSString *BRANCH_FEATURE_TAG_GIFT = @"gift";
+
+static NSString *TAGS = @"tags";
+static NSString *LINK_TYPE = @"type";
+static NSString *ALIAS = @"alias";
+static NSString *CHANNEL = @"channel";
+static NSString *FEATURE = @"feature";
+static NSString *STAGE = @"stage";
+static NSString *DURATION = @"duration";
+static NSString *DATA = @"data";
 
 typedef enum {
     BranchMostRecentFirst,
@@ -35,13 +45,51 @@ typedef enum {
     BranchUnlimitedRewards = 0
 } ReferralCodeCalculation;
 
+typedef enum {
+    BranchLinkTypeUnlimitedUse = 0,
+    BranchLinkTypeOneTimeUse = 1
+} BranchLinkType;
+
 @interface Branch : NSObject
 
-+ (Branch *)getInstance:(NSString *)key;
 + (Branch *)getInstance;
++ (Branch *)getInstance:(NSString *)appKey;
 
-- (void)setDebug;
+// Branch Activity item providers for UIActivityViewController
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                   andParams:(NSDictionary *)params
+                                                     andTags:(NSArray *)tags
+                                                  andFeature:(NSString *)feature
+                                                    andStage:(NSString *)stage
+                                                    andAlias:(NSString *)alias;
 
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                          andParams:(NSDictionary *)params;
+
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                   andParams:(NSDictionary *)params
+                                                  andFeature:(NSString *)feature;
+
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                   andParams:(NSDictionary *)params
+                                                  andFeature:(NSString *)feature
+                                                    andStage:(NSString *)stage;
+
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                          andParams:(NSDictionary *)params
+                                                         andFeature:(NSString *)feature
+                                                           andStage:(NSString *)stage
+                                                           andTags:(NSArray *)tags;
+
++ (BranchActivityItemProvider *)getBranchActivityItemWithDefaultURL:(NSString *)url
+                                                          andParams:(NSDictionary *)params
+                                                         andFeature:(NSString *)feature
+                                                           andStage:(NSString *)stage
+                                                           andAlias:(NSString *)alias;
+
++ (void)setDebug;
+
+- (void)closeSession;
 - (void)initSession;
 - (void)initSessionWithLaunchOptions:(NSDictionary *)options;
 - (void)initSession:(BOOL)isReferrable;
@@ -50,11 +98,13 @@ typedef enum {
 - (void)initSessionWithLaunchOptions:(NSDictionary *)options andRegisterDeepLinkHandler:(callbackWithParams)callback;
 - (void)initSession:(BOOL)isReferrable andRegisterDeepLinkHandler:(callbackWithParams)callback;
 - (void)initSessionWithLaunchOptions:(NSDictionary *)options isReferrable:(BOOL)isReferrable andRegisterDeepLinkHandler:(callbackWithParams)callback;
-- (void)closeSession;
 
 - (NSDictionary *)getFirstReferringParams;
 - (NSDictionary *)getLatestReferringParams;
 - (void)resetUserSession;
+- (void)setRetryInterval:(NSInteger)retryInterval;
+- (void)setMaxRetries:(NSInteger)maxRetries;
+- (void)setNetworkTimeout:(NSInteger)timeout;
 
 - (BOOL)handleDeepLink:(NSURL *)url;
 
@@ -78,6 +128,22 @@ typedef enum {
 - (void)getCreditHistoryAfter:(NSString *)creditTransactionId number:(NSInteger)length order:(CreditHistoryOrder)order andCallback:(callbackWithList)callback;
 - (void)getCreditHistoryForBucket:(NSString *)bucket after:(NSString *)creditTransactionId number:(NSInteger)length order:(CreditHistoryOrder)order andCallback:(callbackWithList)callback;
 
+- (NSString *)getShortURL;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params;
+- (NSString *)getContentUrlWithParams:(NSDictionary *)params andChannel:(NSString *)channel;
+- (NSString *)getContentUrlWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel;
+- (NSString *)getReferralUrlWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel;
+- (NSString *)getReferralUrlWithParams:(NSDictionary *)params andChannel:(NSString *)channel;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andAlias:(NSString *)alias;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andType:(BranchLinkType)type;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andMatchDuration:(NSUInteger)duration;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andAlias:(NSString *)alias;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andType:(BranchLinkType)type;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andMatchDuration:(NSUInteger)duration;
+- (NSString *)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature;
+
 - (void)getShortURLWithCallback:(callbackWithUrl)callback;
 - (void)getShortURLWithParams:(NSDictionary *)params andCallback:(callbackWithUrl)callback;
 - (void)getContentUrlWithParams:(NSDictionary *)params andChannel:(NSString *)channel andCallback:(callbackWithUrl)callback;
@@ -85,9 +151,16 @@ typedef enum {
 - (void)getReferralUrlWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andCallback:(callbackWithUrl)callback;
 - (void)getReferralUrlWithParams:(NSDictionary *)params andChannel:(NSString *)channel andCallback:(callbackWithUrl)callback;
 - (void)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andAlias:(NSString *)alias andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andType:(BranchLinkType)type andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andTags:(NSArray *)tags andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andMatchDuration:(NSUInteger)duration andCallback:(callbackWithUrl)callback;
 - (void)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andAlias:(NSString *)alias andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andType:(BranchLinkType)type andCallback:(callbackWithUrl)callback;
+- (void)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andStage:(NSString *)stage andMatchDuration:(NSUInteger)duration andCallback:(callbackWithUrl)callback;
 - (void)getShortURLWithParams:(NSDictionary *)params andChannel:(NSString *)channel andFeature:(NSString *)feature andCallback:(callbackWithUrl)callback;
 
+- (void)getReferralCodeWithCallback:(callbackWithParams)callback;
 - (void)getReferralCodeWithAmount:(NSInteger)amount andCallback:(callbackWithParams)callback;
 - (void)getReferralCodeWithPrefix:(NSString *)prefix amount:(NSInteger)amount andCallback:(callbackWithParams)callback;
 - (void)getReferralCodeWithAmount:(NSInteger)amount expiration:(NSDate *)expiration andCallback:(callbackWithParams)callback;

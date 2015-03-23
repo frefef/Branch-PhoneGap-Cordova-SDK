@@ -1,12 +1,20 @@
 package io.branch.referral;
 
-import io.branch.referral.ApkParser;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.UUID;
 import java.util.jar.JarFile;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -18,7 +26,6 @@ import android.net.NetworkInfo;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -33,9 +40,12 @@ public class SystemObserver {
 		isRealHardwareId = true;
 	}
 	
-	public String getUniqueID() {
+	public String getUniqueID(boolean debug) {
 		if (context_ != null) { 
-			String androidID = Secure.getString(context_.getContentResolver(), Secure.ANDROID_ID);
+			String androidID = null;
+			if (!debug) {
+				androidID = Secure.getString(context_.getContentResolver(), Secure.ANDROID_ID);
+			}
 			if (androidID == null) {
 				androidID = UUID.randomUUID().toString();
 				isRealHardwareId = false;
@@ -50,24 +60,102 @@ public class SystemObserver {
 	}
 	
 	public String getURIScheme() {
+	    return getURIScheme(context_.getPackageName());
+	}
+	
+	public String getURIScheme(String packageName) {
+		String scheme = BLANK;
+		if (!isLowOnMemory()) {
+			PackageManager pm = context_.getPackageManager();
+			try {
+		        ApplicationInfo ai = pm.getApplicationInfo(packageName, 0);
+		        String sourceApk = ai.publicSourceDir;
+		        JarFile jf = null;
+		        InputStream is = null;
+		        byte[] xml = null;
+		        try {
+		            jf = new JarFile(sourceApk);
+	            	is = jf.getInputStream(jf.getEntry("AndroidManifest.xml"));
+		            xml = new byte[is.available()];
+	                //noinspection ResultOfMethodCallIgnored
+	                is.read(xml);
+		            scheme = new ApkParser().decompressXML(xml);
+		        } catch (Exception ignored) {
+                } catch (OutOfMemoryError ignored) {
+		        } finally {
+		        	xml = null;
+		        	try {
+		        		if (is != null) {
+		        			is.close();
+		        			is = null;
+		        		}
+		        		if (jf != null) {
+		        			jf.close();	
+		        			jf = null;
+		        		}
+		        	} catch (IOException ignored) {}
+		        }
+		    } catch (NameNotFoundException ignored) {
+		    }
+		}
+		return scheme;
+	}
+	
+	private boolean isLowOnMemory() {
+		ActivityManager activityManager = (ActivityManager) context_.getSystemService(Context.ACTIVITY_SERVICE);
+		MemoryInfo mi = new MemoryInfo();
+		activityManager.getMemoryInfo(mi);
+		return mi.lowMemory;
+	}
+	
+	@SuppressLint("NewApi")
+	public JSONArray getListOfApps() {
+		JSONArray arr = new JSONArray();
 		PackageManager pm = context_.getPackageManager();
-	    try {
-	        ApplicationInfo ai = pm.getApplicationInfo(context_.getPackageName(), 0);
-	        String sourceApk = ai.publicSourceDir;
-	        Log.i("BranchUriSchemer", "source APK file " + sourceApk);
-	        try {
-	            JarFile jf = new JarFile(sourceApk);
-	            InputStream is = jf.getInputStream(jf.getEntry("AndroidManifest.xml"));
-	            byte[] xml = new byte[is.available()];
-	            is.read(xml);
-	            String scheme = new ApkParser().decompressXML(xml);
-	            jf.close();
-	            return scheme;
-	          } catch (Exception ex) {
-	          }
-	    } catch (NameNotFoundException e) {
-	    }
-		return BLANK;
+		
+		List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+		if (packages != null) {
+			for (ApplicationInfo appInfo : packages) {
+				if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 1) {
+					JSONObject packObj = new JSONObject();
+					try {
+						String label = appInfo.loadLabel(pm).toString();
+						if (label != null)
+							packObj.put("name", label);
+						String packName = appInfo.packageName;
+						if (packName != null) {
+							packObj.put("app_identifier", packName);
+							String uriScheme = getURIScheme(packName);
+							if (!uriScheme.equals(SystemObserver.BLANK))
+								packObj.put("uri_scheme", uriScheme);
+						}
+						String pSourceDir = appInfo.publicSourceDir;
+						if (pSourceDir != null)
+							packObj.put("public_source_dir", pSourceDir);
+						String sourceDir = appInfo.sourceDir;
+						if (sourceDir != null)
+							packObj.put("source_dir", sourceDir);
+						
+						PackageInfo packInfo = pm.getPackageInfo(appInfo.packageName, PackageManager.GET_PERMISSIONS);
+						if (packInfo != null) {
+							if (packInfo.versionCode >= 9) {
+								packObj.put("install_date", packInfo.firstInstallTime);
+								packObj.put("last_update_date", packInfo.lastUpdateTime);
+							}
+							packObj.put("version_code", packInfo.versionCode);
+							if (packInfo.versionName != null)
+								packObj.put("version_name", packInfo.versionName);
+						}
+						packObj.put("os", this.getOS());
+						
+						arr.put(packObj);
+					} catch(JSONException ignore) {
+					} catch(NameNotFoundException ignore) {			
+					}
+				}
+			}
+		}
+		return arr;
 	}
 	
 	public String getAppVersion() {
@@ -77,7 +165,7 @@ public class SystemObserver {
 				 return packageInfo.versionName;
 			 else
 				 return BLANK;
-		 } catch (NameNotFoundException e) {
+		 } catch (NameNotFoundException ignored ) {
 		 }
 		 return BLANK;
 	}
@@ -98,7 +186,7 @@ public class SystemObserver {
             if (bluetoothAdapter != null) {
                 return bluetoothAdapter.isEnabled();
             }
-        } catch (SecurityException e) {
+        } catch (SecurityException ignored ) {
         }
         return false;
 	}
@@ -118,7 +206,7 @@ public class SystemObserver {
 	public boolean getNFCPresent() {
 		try {
 			return context_.getPackageManager().hasSystemFeature("android.hardware.nfc");
-		} catch (Exception e) {
+		} catch (Exception ignored ) {
 		}
 		return false;
 	}
@@ -126,7 +214,7 @@ public class SystemObserver {
 	public boolean getTelephonePresent() {
 		try {
 			return context_.getPackageManager().hasSystemFeature("android.hardware.telephony");
-		} catch (Exception e) {
+		} catch (Exception ignored ) {
 		}
 		return false;
 	}
@@ -147,6 +235,10 @@ public class SystemObserver {
 		return android.os.Build.VERSION.SDK_INT;
 	}
 	
+	public boolean isSimulator() {
+		return android.os.Build.FINGERPRINT.contains("generic");
+	}
+	
 	@SuppressLint("NewApi")
 	public int getUpdateState() {
 		if (android.os.Build.VERSION.SDK_INT >= 9) {
@@ -157,7 +249,7 @@ public class SystemObserver {
 				} else {
 					return 0;
 				}
-			} catch (NameNotFoundException e) {
+			} catch (NameNotFoundException ignored ) {
 			}
 		}
 		return 0;
@@ -177,5 +269,22 @@ public class SystemObserver {
             return wifiInfo.isConnected();
         }
 		return false;
+	}
+	
+	public String getAdvertisingId() {
+		String advertisingId = null;
+		
+		try {
+		    Class<?> AdvertisingIdClientClass = Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient");
+		    Method getAdvertisingIdInfoMethod = AdvertisingIdClientClass.getMethod("getAdvertisingIdInfo", Context.class);
+		    Object adInfoObj = getAdvertisingIdInfoMethod.invoke(null, context_);
+		    Method getIdMethod = adInfoObj.getClass().getMethod("getId");
+		    advertisingId = (String) getIdMethod.invoke(adInfoObj);
+		} catch(IllegalStateException ex) {
+			ex.printStackTrace();
+		} catch(Exception ignore) {
+		}
+		
+		return advertisingId;
 	}
 }

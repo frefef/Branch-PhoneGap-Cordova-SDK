@@ -58,7 +58,7 @@ public class Base64 {
     public static final int URL_SAFE = 8;
 
     /**
-     * Flag to pass to {@link Base64OutputStream} to indicate that it
+     * Flag to pass to {@link android.util.Base64OutputStream} to indicate that it
      * should not close the output stream it is wrapping when it
      * itself is closed.
      */
@@ -534,7 +534,8 @@ public class Base64 {
         encoder.output = new byte[output_len];
         encoder.process(input, offset, len, true);
 
-        assert encoder.op == output_len;
+        if (BuildConfig.DEBUG && (encoder.op != output_len))
+            throw new AssertionError();
 
         return encoder.output;
     }
@@ -628,7 +629,7 @@ public class Base64 {
                             ((input[p++] & 0xff) << 8) |
                             (input[p++] & 0xff);
                         tailLen = 0;
-                    };
+                    }
                     break;
 
                 case 2:
@@ -716,8 +717,8 @@ public class Base64 {
                     output[op++] = '\n';
                 }
 
-                assert tailLen == 0;
-                assert p == len;
+                if (BuildConfig.DEBUG && (tailLen != 0 || p != len))
+                    throw new AssertionError();
             } else {
                 // Save the leftovers in tail to be consumed on the next
                 // call to encodeInternal.

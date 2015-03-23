@@ -13,6 +13,7 @@
 
 // Exec API
 - (void)getInstance:(CDVInvokedUrlCommand*)command;
+- (void)setDebug:(CDVInvokedUrlCommand*)command;
 
 - (void)initSession:(CDVInvokedUrlCommand*)command;
 - (void)closeSession:(CDVInvokedUrlCommand*)command;
@@ -27,5 +28,13 @@
 
 - (void)getShortUrl:(CDVInvokedUrlCommand*)command;
 - (void)getContentUrl:(CDVInvokedUrlCommand*)command;
+
+- (void)loadActionCounts:(CDVInvokedUrlCommand*)command;
+- (void)loadRewards:(CDVInvokedUrlCommand*)command;
+- (void)getCreditHistory:(CDVInvokedUrlCommand*)command;
+- (void)getCredits:(CDVInvokedUrlCommand*)command;
+- (void)redeemRewards:(CDVInvokedUrlCommand*)command;
+- (void)getTotalCountsForAction:(CDVInvokedUrlCommand*)command;
+- (void)getUniqueCountsForAction:(CDVInvokedUrlCommand*)command;
 
 @end

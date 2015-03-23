@@ -2,6 +2,9 @@ package io.branch.referral;
 
 import io.branch.referral.Branch.BranchLinkCreateListener;
 import io.branch.referral.Branch.BranchReferralInitListener;
+import io.branch.referral.Branch.BranchReferralStateChangedListener;
+import io.branch.referral.Branch.BranchListResponseListener;
+import io.branch.referral.Branch.BranchError;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -48,6 +51,12 @@ public class CDVBranch extends CordovaPlugin {
     			this.branch_ = Branch.getInstance(context_);
     		}
     		callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+        } else if (action.equals("setDebug")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            this.branch_.setDebug();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
     	} else if (action.equals("initSession")) {
     		if (this.branch_ == null) {
     			this.branch_ = Branch.getInstance(context_);
@@ -56,7 +65,7 @@ public class CDVBranch extends CordovaPlugin {
     		if (args.length() > 0) {
     			this.branch_.initSession(new BranchReferralInitListener() {
 					@Override
-					public void onInitFinished(JSONObject referringParams) {
+					public void onInitFinished(JSONObject referringParams, BranchError error) {
 						intent_.setData(null);
                         try {
 							retParams.put("data", referringParams);
@@ -69,7 +78,7 @@ public class CDVBranch extends CordovaPlugin {
     		} else {
     			this.branch_.initSession(new BranchReferralInitListener() {
 					@Override
-					public void onInitFinished(JSONObject referringParams) {
+					public void onInitFinished(JSONObject referringParams, BranchError error) {
                         intent_.setData(null);
 						try {
 							retParams.put("data", referringParams);
@@ -108,7 +117,7 @@ public class CDVBranch extends CordovaPlugin {
     		if (args.length() > 0) {
     			this.branch_.setIdentity(args.getString(0), new BranchReferralInitListener() {
 					@Override
-					public void onInitFinished(JSONObject referringParams) {
+					public void onInitFinished(JSONObject referringParams, BranchError error) {
 						try {
 							retParams.put("data", referringParams);
 						} catch (JSONException e) {
@@ -165,7 +174,7 @@ public class CDVBranch extends CordovaPlugin {
     		}
     		this.branch_.getShortUrl(channel, feature, null, metadata, new BranchLinkCreateListener() {
 				@Override
-				public void onLinkCreate(String url) {
+				public void onLinkCreate(String url, BranchError error) {
 					try {
 						retParams.put("url", url);
 					} catch (JSONException e) {
@@ -190,7 +199,7 @@ public class CDVBranch extends CordovaPlugin {
             }
             this.branch_.getContentUrl(channel, metadata, new BranchLinkCreateListener() {
                 @Override
-                public void onLinkCreate(String url) {
+                public void onLinkCreate(String url, BranchError error) {
                     try {
                         retParams.put("url", url);
                     } catch (JSONException e) {
@@ -199,6 +208,101 @@ public class CDVBranch extends CordovaPlugin {
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
                 }
             });
+        } else if (action.equals("loadActionCounts")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            final JSONObject retParams = new JSONObject();
+            this.branch_.loadActionCounts(new BranchReferralStateChangedListener() {
+                @Override
+                public void onStateChanged(boolean changed, BranchError error) {
+                    try {
+                        retParams.put("changed", changed);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
+                }
+            });
+        } else if (action.equals("loadRewards")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            final JSONObject retParams = new JSONObject();
+            this.branch_.loadRewards(new BranchReferralStateChangedListener() {
+                @Override
+                public void onStateChanged(boolean changed, BranchError error) {
+                    try {
+                        retParams.put("changed", changed);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
+                }
+            });
+        } else if (action.equals("getCreditHistory")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            final JSONObject retParams = new JSONObject();
+            this.branch_.loadRewards(new BranchListResponseListener() {
+                @Override
+                public void onReceivingResponse(JSONArray list, BranchError error) {
+                    try {
+                        retParams.put("list", list);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
+                }
+            });
+        } else if (action.equals("getCredits")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            String bucket = "";
+            if (args.size() > 0 && args.get(0) instanceof String) {
+                bucket = args.get(0);
+            } else {
+                bucket = "default";
+            }
+            final JSONObject retParams = new JSONObject();
+            retParams.put("credits", this.branch_.getCredits(bucket));
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
+        } else if (action.equals("redeemRewards")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            String bucket = "";
+            int amount = 0;
+            if (args.size() > 1 && args.get(1) instanceof String) {
+                amount = args.get(0);
+                bucket = args.get(1);
+            }
+            retParams.put("count", this.branch_.redeemRewards(bucket, amount));
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+        } else if (action.equals("getTotalCountsForAction")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            String action = "";
+            if (args.size() > 0 && args.get(0) instanceof String) {
+                action = args.get(0);
+            }
+            final JSONObject retParams = new JSONObject();
+            retParams.put("count", this.branch_.getTotalCountsForAction(action));
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
+        } else if (action.equals("getUniqueCountsForAction")) {
+            if (this.branch_ == null) {
+                this.branch_ = Branch.getInstance(context_);
+            }
+            String action = "";
+            if (args.size() > 0 && args.get(0) instanceof String) {
+                action = args.get(0);
+            }
+            final JSONObject retParams = new JSONObject();
+            retParams.put("count", this.branch_.getUniqueCountsForAction(action));
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
         } else {
     		return false;
     	}
