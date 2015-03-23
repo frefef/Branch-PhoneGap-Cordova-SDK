@@ -183,3 +183,94 @@ You have the ability to control the direct deep linking of each link by insertin
 | --- | ---
 | "$deeplink_path" | The value of the deep link path that you'd like us to append to your URI. For example, you could specify "$deeplink_path": "radio/station/456" and we'll open the app with the URI "yourapp://radio/station/456?link_click_id=branch-identifier". This is primarily for supporting legacy deep linking infrastructure. 
 | "$always_deeplink" | true or false. (default is not to deep link first) This key can be specified to have our linking service force try to open the app, even if we're not sure the user has the app installed. If the app is not installed, we fall back to the respective app store or $platform_url key. By default, we only open the app if we've seen a user initiate a session in your app from a Branch link (has been cookied and deep linked by Branch)
+
+## Referral system rewarding functionality
+
+In a standard referral system, you have 2 parties: the original user and the invitee. Our system is flexible enough to handle rewards for all users. Here are a couple example scenarios:
+
+1) Reward the original user for taking action (eg. inviting, purchasing, etc)
+
+2) Reward the invitee for installing the app from the original user's referral link
+
+3) Reward the original user when the invitee takes action (eg. give the original user credit when their the invitee buys something)
+
+These reward definitions are created on the dashboard, under the 'Reward Rules' section in the 'Referrals' tab on the dashboard.
+
+Warning: For a referral program, you should not use unique awards for custom events and redeem pre-identify call. This can allow users to cheat the system.
+
+### Get reward balance
+
+Reward balances change randomly on the backend when certain actions are taken (defined by your rules), so you'll need to make an asynchronous call to retrieve the balance. Here is the syntax:
+
+```js
+var branch = window.Branch;
+branch.loadRewards(function(changed) {
+    // changed will indicate whether credits were updated
+    if (changed) {
+        // Pass the bucket name to retrieve the current balance of credits
+        var credits = branch.getCredits("default");
+    }
+});
+```
+
+### Redeem all or some of the reward balance (store state)
+
+We will store how many of the rewards have been deployed so that you don't have to track it on your end. In order to save that you gave the credits to the user, you can call redeem. Redemptions will reduce the balance of outstanding credits permanently.
+
+```js
+var branch = window.Branch;
+branch.redeemRewards(5, "default");
+```
+
+### Get credit history
+
+This call will retrieve the entire history of credits and redemptions from the individual user. To use this call, implement like so:
+
+```js
+var branch = window.Branch;
+branch.getCreditHistory(function(history) {
+    // retrieve and display the credit history
+    // example transaction opbject below
+});
+```
+
+The response will return an array that has been parsed from the following JSON:
+```json
+[
+    {
+        "transaction": {
+                           "date": "2014-10-14T01:54:40.425Z",
+                           "id": "50388077461373184",
+                           "bucket": "default",
+                           "type": 0,
+                           "amount": 5
+                       },
+        "referrer": "12345678",
+        "referree": null
+    },
+    {
+        "transaction": {
+                           "date": "2014-10-14T01:55:09.474Z",
+                           "id": "50388199301710081",
+                           "bucket": "default",
+                           "type": 2,
+                           "amount": -3
+                       },
+        "referrer": null,
+        "referree": "12345678"
+    }
+]
+```
+**referrer**
+: The id of the referring user for this credit transaction. Returns null if no referrer is involved. Note this id is the user id in developer's own system that's previously passed to Branch's identify user API call.
+
+**referree**
+: The id of the user who was referred for this credit transaction. Returns null if no referree is involved. Note this id is the user id in developer's own system that's previously passed to Branch's identify user API call.
+
+**type**
+: This is the type of credit transaction
+
+1. _0_ - A reward that was added automatically by the user completing an action or referral
+1. _1_ - A reward that was added manually
+2. _2_ - A redemption of credits that occurred through our API or SDKs
+3. _3_ - This is a very unique case where we will subtract credits automatically when we detect fraud
