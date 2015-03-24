@@ -195,7 +195,7 @@ Branch.prototype.loadActionCounts = function(callback) {
 		},
 		"Branch", 
 		"loadActionCounts", 
-		execArgs
+		[]
 	);
 };
 
@@ -213,7 +213,7 @@ Branch.prototype.loadRewards = function(callback) {
 		},
 		"Branch", 
 		"loadRewards", 
-		execArgs
+		[]
 	);
 };
 
@@ -231,7 +231,7 @@ Branch.prototype.getCreditHistory = function(callback) {
 		},
 		"Branch", 
 		"getCreditHistory", 
-		execArgs
+		[]
 	);
 };
 
