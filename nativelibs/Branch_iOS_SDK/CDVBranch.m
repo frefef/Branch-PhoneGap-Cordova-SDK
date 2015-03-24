@@ -208,7 +208,7 @@
         self.branch = [Branch getInstance];
     }
     NSString *bucket = nil;
-    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+    if ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
         bucket = [command.arguments objectAtIndex:0];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
@@ -219,10 +219,6 @@
 - (void)redeemRewards:(CDVInvokedUrlCommand*)command {
     if (!self.branch) {
         self.branch = [Branch getInstance];
-    }
-    NSString *bucket = nil;
-    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
-        bucket = [command.arguments objectAtIndex:0];
     }
     NSInteger credits = 0;
     NSString *bucket = nil;
@@ -241,12 +237,12 @@
     if (!self.branch) {
         self.branch = [Branch getInstance];
     }
-    NSString *bucket = nil;
-    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
-        bucket = [command.arguments objectAtIndex:0];
+    NSString *action = nil;
+    if ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+        action = [command.arguments objectAtIndex:0];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [retParams setObject:[NSNumber numberWithInteger:[self.branch getTotalCountsForAction:bucket]] forKey:@"count"];
+    [retParams setObject:[NSNumber numberWithInteger:[self.branch getTotalCountsForAction:action]] forKey:@"count"];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
 }
 
@@ -255,11 +251,11 @@
         self.branch = [Branch getInstance];
     }
     NSString *action = nil;
-    for ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
+    if ([command.arguments count] && [[command.arguments objectAtIndex:0] isKindOfClass:[NSString class]]) {
         action = [command.arguments objectAtIndex:0];
     }
     NSMutableDictionary *retParams = [[NSMutableDictionary alloc] init];
-    [retParams setObject:[NSNumber numberWithInteger:[self.branch getUniqueCountsForAction:bucket]] forKey:@"count"];
+    [retParams setObject:[NSNumber numberWithInteger:[self.branch getUniqueCountsForAction:action]] forKey:@"count"];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retParams] callbackId:command.callbackId];
 }
 
