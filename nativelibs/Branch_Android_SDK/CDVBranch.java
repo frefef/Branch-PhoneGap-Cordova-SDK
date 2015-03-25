@@ -4,7 +4,7 @@ import io.branch.referral.Branch.BranchLinkCreateListener;
 import io.branch.referral.Branch.BranchReferralInitListener;
 import io.branch.referral.Branch.BranchReferralStateChangedListener;
 import io.branch.referral.Branch.BranchListResponseListener;
-import io.branch.referral.Branch.BranchError;
+import io.branch.referral.BranchError;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
