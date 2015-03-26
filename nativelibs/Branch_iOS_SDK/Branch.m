@@ -342,8 +342,13 @@ static Branch *currInstance;
 }
 
 - (void)setIdentity:(NSString *)userId {
-    if (!userId || [[BNCPreferenceHelper getUserIdentity] isEqualToString:userId])
+    if (!userId || [[BNCPreferenceHelper getUserIdentity] isEqualToString:userId]) {
+        if (self.installparamLoadCallback) {
+            self.installparamLoadCallback([[NSDictionary alloc] init], nil);
+            self.installparamLoadCallback = nil;
+        }
         return;
+    }
 
     dispatch_async(self.asyncQueue, ^{
         BNCServerRequest *req = [[BNCServerRequest alloc] init];
