@@ -245,7 +245,7 @@ public class CDVBranch extends CordovaPlugin {
                 this.branch_ = Branch.getInstance(context_);
             }
             final JSONObject retParams = new JSONObject();
-            this.branch_.loadRewards(new BranchListResponseListener() {
+            this.branch_.getCreditHistory(new BranchListResponseListener() {
                 @Override
                 public void onReceivingResponse(JSONArray list, BranchError error) {
                     try {
@@ -261,13 +261,13 @@ public class CDVBranch extends CordovaPlugin {
                 this.branch_ = Branch.getInstance(context_);
             }
             String bucket = "";
-            if (args.size() > 0 && args.get(0) instanceof String) {
-                bucket = args.get(0);
+            if (args.length() > 0 && args.get(0) instanceof String) {
+                bucket = args.getString(0);
             } else {
                 bucket = "default";
             }
             final JSONObject retParams = new JSONObject();
-            retParams.put("credits", this.branch_.getCredits(bucket));
+            retParams.put("credits", this.branch_.getCreditsForBucket(bucket));
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
         } else if (action.equals("redeemRewards")) {
             if (this.branch_ == null) {
@@ -275,33 +275,33 @@ public class CDVBranch extends CordovaPlugin {
             }
             String bucket = "";
             int amount = 0;
-            if (args.size() > 1 && args.get(1) instanceof String) {
-                amount = args.get(0);
-                bucket = args.get(1);
+            if (args.length() > 1 && args.get(1) instanceof String) {
+                amount = args.getInt(0);
+                bucket = args.getString(1);
             }
-            retParams.put("count", this.branch_.redeemRewards(bucket, amount));
+            this.branch_.redeemRewards(bucket, amount);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
         } else if (action.equals("getTotalCountsForAction")) {
             if (this.branch_ == null) {
                 this.branch_ = Branch.getInstance(context_);
             }
-            String action = "";
-            if (args.size() > 0 && args.get(0) instanceof String) {
-                action = args.get(0);
+            String event = "";
+            if (args.length() > 0 && args.get(0) instanceof String) {
+                event = args.getString(0);
             }
             final JSONObject retParams = new JSONObject();
-            retParams.put("count", this.branch_.getTotalCountsForAction(action));
+            retParams.put("count", this.branch_.getTotalCountsForAction(event));
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
         } else if (action.equals("getUniqueCountsForAction")) {
             if (this.branch_ == null) {
                 this.branch_ = Branch.getInstance(context_);
             }
-            String action = "";
-            if (args.size() > 0 && args.get(0) instanceof String) {
-                action = args.get(0);
+            String event = "";
+            if (args.length() > 0 && args.get(0) instanceof String) {
+                event = args.getString(0);
             }
             final JSONObject retParams = new JSONObject();
-            retParams.put("count", this.branch_.getUniqueCountsForAction(action));
+            retParams.put("count", this.branch_.getUniqueCountsForAction(event));
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, retParams));
         } else {
     		return false;
