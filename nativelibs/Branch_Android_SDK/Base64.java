@@ -534,6 +534,9 @@ public class Base64 {
         encoder.output = new byte[output_len];
         encoder.process(input, offset, len, true);
 
+        if (BuildConfig.DEBUG && (encoder.op != output_len))
+            throw new AssertionError();
+
         return encoder.output;
     }
 
@@ -713,6 +716,9 @@ public class Base64 {
                     if (do_cr) output[op++] = '\r';
                     output[op++] = '\n';
                 }
+
+                if (BuildConfig.DEBUG && (tailLen != 0 || p != len))
+                    throw new AssertionError();
             } else {
                 // Save the leftovers in tail to be consumed on the next
                 // call to encodeInternal.

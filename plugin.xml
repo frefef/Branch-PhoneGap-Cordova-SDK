@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="io.branchmetrics.branchreferral" version="0.4.4">
+        id="io.branchmetrics.branchreferral" version="0.4.6">
     <name>Branch</name>
     <description>Branch Deep Linking SDK</description>
     <license>See docs</license>
@@ -44,6 +44,7 @@
         <header-file src="nativelibs/Branch_iOS_SDK/BranchActivityItemProvider.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCConfig.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCError.h" />
+        <header-file src="nativelibs/Branch_iOS_SDK/BNCEncodingUtils.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCLinkCache.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/BNCLinkData.h" />
         <header-file src="nativelibs/Branch_iOS_SDK/CDVBranch.h" />
@@ -58,6 +59,7 @@
 
         <source-file src="nativelibs/Branch_iOS_SDK/BranchActivityItemProvider.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCError.m" />
+        <source-file src="nativelibs/Branch_iOS_SDK/BNCEncodingUtils.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCLinkCache.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/BNCLinkData.m" />
         <source-file src="nativelibs/Branch_iOS_SDK/CDVBranch.m" />
